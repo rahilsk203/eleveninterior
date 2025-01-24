@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FiMenu, FiMapPin, FiPhone, FiMail, FiClock } from "react-icons/fi";
+import { FiMenu, FiMapPin, FiPhone, FiMail, FiClock, FiArrowLeft, FiArrowUp } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { useWindowScroll } from "react-use"; // Import useWindowScroll
 import AnimatedTitle from "./AnimatedTitle.jsx";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import Footer from "./Footer.jsx";
+import clsx from "clsx"; // Import clsx for conditional class names
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -16,6 +19,7 @@ const ContactForm = ({ formRef, handleSubmit, name, setName, number, setNumber, 
     onSubmit={handleSubmit}
     className="w-full max-w-2xl mt-10 bg-white/30 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/20 transform hover:scale-105 transition-transform duration-300"
   >
+    {/* Form fields */}
     <div className="mb-6">
       <label htmlFor="name" className="block text-left text-gray-700 font-medium mb-2">
         Your Name
@@ -78,7 +82,7 @@ const CompanyInfo = ({ companyInfoRef }) => (
   >
     <h3 className="text-2xl font-bold text-black mb-6">Our Contact Information</h3>
     <div className="space-y-4 text-left">
-      {/* Address */}
+      {/* Address, Phone, Email, Work Hours */}
       <div className="flex items-start">
         <a
           href="https://www.google.com/maps?q=123+Main+Street,City,Country"
@@ -94,7 +98,6 @@ const CompanyInfo = ({ companyInfoRef }) => (
         </div>
       </div>
 
-      {/* Phone */}
       <div className="flex items-start">
         <a href="tel:+1234567890" className="hover:opacity-80 transition-opacity">
           <FiPhone className="text-gray-700 w-6 h-6 mr-4 flex-shrink-0 cursor-pointer" />
@@ -105,7 +108,6 @@ const CompanyInfo = ({ companyInfoRef }) => (
         </div>
       </div>
 
-      {/* Email */}
       <div className="flex items-start">
         <a href="mailto:info@eleveninteriorworld.com" className="hover:opacity-80 transition-opacity">
           <FiMail className="text-gray-700 w-6 h-6 mr-4 flex-shrink-0 cursor-pointer" />
@@ -116,7 +118,6 @@ const CompanyInfo = ({ companyInfoRef }) => (
         </div>
       </div>
 
-      {/* Work Hours */}
       <div className="flex items-start">
         <FiClock className="text-gray-700 w-6 h-6 mr-4 flex-shrink-0" />
         <div>
@@ -150,18 +151,41 @@ function Contact() {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [number, setNumber] = useState("");
+  const [showBackArrow, setShowBackArrow] = useState(true); // State to toggle arrows
 
   const formRef = useRef(null);
   const companyInfoRef = useRef(null);
   const mapRef = useRef(null);
   const animatedTitleRef = useRef(null);
 
+  const navigate = useNavigate();
+  const { y: scrollY } = useWindowScroll(); // Track scroll position
+
+  // Toggle arrows based on scroll position
+  useEffect(() => {
+    if (scrollY > 100) {
+      setShowBackArrow(false); // Hide back arrow and show up arrow
+    } else {
+      setShowBackArrow(true); // Show back arrow and hide up arrow
+    }
+  }, [scrollY]);
+
+  // Scroll to top when up arrow is clicked
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Delay the state update until the scroll animation completes
+    setTimeout(() => {
+      setShowBackArrow(true); // Show back arrow after scrolling to top
+    }, 500); // Adjust the delay based on your scroll animation duration
+  };
+
   // Ensure the page scrolls to the top on load
   useEffect(() => {
-    window.scrollTo(0, 0); // Scroll to the top of the page
-    document.documentElement.style.scrollBehavior = "smooth"; // Enable smooth scrolling
+    window.scrollTo(0, 0);
+    document.documentElement.style.scrollBehavior = "smooth";
     return () => {
-      document.documentElement.style.scrollBehavior = "auto"; // Reset smooth scrolling on unmount
+      document.documentElement.style.scrollBehavior = "auto";
     };
   }, []);
 
@@ -174,21 +198,6 @@ function Contact() {
       duration: 1,
       scrollTrigger: {
         trigger: animatedTitleRef.current,
-        start: "top 80%", // Animation starts when the top of the element is 80% from the top of the viewport
-        end: "bottom 20%", // Animation ends when the bottom of the element is 20% from the top of the viewport
-        toggleActions: "play none none reverse", // Play animation on enter, reverse on leave
-        markers: false, // Disable debug markers
-      },
-      willChange: "transform, opacity", // Optimize for animations
-    });
-
-    // Animate form
-    gsap.from(formRef.current, {
-      opacity: 0,
-      y: 50,
-      duration: 1,
-      scrollTrigger: {
-        trigger: formRef.current,
         start: "top 80%",
         end: "bottom 20%",
         toggleActions: "play none none reverse",
@@ -197,34 +206,21 @@ function Contact() {
       willChange: "transform, opacity",
     });
 
-    // Animate company info
-    gsap.from(companyInfoRef.current, {
-      opacity: 0,
-      y: 50,
-      duration: 1,
-      scrollTrigger: {
-        trigger: companyInfoRef.current,
-        start: "top 80%",
-        end: "bottom 20%",
-        toggleActions: "play none none reverse",
-        markers: false,
-      },
-      willChange: "transform, opacity",
-    });
-
-    // Animate map
-    gsap.from(mapRef.current, {
-      opacity: 0,
-      y: 50,
-      duration: 1,
-      scrollTrigger: {
-        trigger: mapRef.current,
-        start: "top 80%",
-        end: "bottom 20%",
-        toggleActions: "play none none reverse",
-        markers: false,
-      },
-      willChange: "transform, opacity",
+    // Animate form, company info, and map
+    [formRef.current, companyInfoRef.current, mapRef.current].forEach((ref) => {
+      gsap.from(ref, {
+        opacity: 0,
+        y: 50,
+        duration: 1,
+        scrollTrigger: {
+          trigger: ref,
+          start: "top 80%",
+          end: "bottom 20%",
+          toggleActions: "play none none reverse",
+          markers: false,
+        },
+        willChange: "transform, opacity",
+      });
     });
   }, []);
 
@@ -242,6 +238,26 @@ function Contact() {
         <div className="text-4xl font-bold text-black">E</div>
         <FiMenu className="text-2xl text-black cursor-pointer hover:text-gray-700 transition-colors" />
       </div>
+
+      {/* Back Button (Left Arrow) */}
+      {showBackArrow && (
+        <button
+          onClick={() => navigate("/")}
+          className="fixed top-4 left-4 p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors z-50"
+        >
+          <FiArrowLeft className="text-xl" />
+        </button>
+      )}
+
+      {/* Up Button (Bottom-Right Arrow) */}
+      {!showBackArrow && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-4 right-4 p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors z-50"
+        >
+          <FiArrowUp className="text-xl" />
+        </button>
+      )}
 
       {/* Main Section */}
       <div className="flex flex-col items-center justify-center w-full max-w-7xl mx-auto">
