@@ -154,17 +154,35 @@ function Contact() {
   const formRef = useRef(null);
   const companyInfoRef = useRef(null);
   const mapRef = useRef(null);
+  const animatedTitleRef = useRef(null);
 
-  // Smooth scrolling for the entire page
+  // Ensure the page scrolls to the top on load
   useEffect(() => {
-    document.documentElement.style.scrollBehavior = "smooth";
+    window.scrollTo(0, 0); // Scroll to the top of the page
+    document.documentElement.style.scrollBehavior = "smooth"; // Enable smooth scrolling
     return () => {
-      document.documentElement.style.scrollBehavior = "auto";
+      document.documentElement.style.scrollBehavior = "auto"; // Reset smooth scrolling on unmount
     };
   }, []);
 
   // GSAP animations
   useGSAP(() => {
+    // Animate the "CONTACT US" text
+    gsap.from(animatedTitleRef.current, {
+      opacity: 0,
+      y: 50,
+      duration: 1,
+      scrollTrigger: {
+        trigger: animatedTitleRef.current,
+        start: "top 80%", // Animation starts when the top of the element is 80% from the top of the viewport
+        end: "bottom 20%", // Animation ends when the bottom of the element is 20% from the top of the viewport
+        toggleActions: "play none none reverse", // Play animation on enter, reverse on leave
+        markers: false, // Disable debug markers
+      },
+      willChange: "transform, opacity", // Optimize for animations
+    });
+
+    // Animate form
     gsap.from(formRef.current, {
       opacity: 0,
       y: 50,
@@ -179,6 +197,7 @@ function Contact() {
       willChange: "transform, opacity",
     });
 
+    // Animate company info
     gsap.from(companyInfoRef.current, {
       opacity: 0,
       y: 50,
@@ -193,6 +212,7 @@ function Contact() {
       willChange: "transform, opacity",
     });
 
+    // Animate map
     gsap.from(mapRef.current, {
       opacity: 0,
       y: 50,
@@ -225,10 +245,14 @@ function Contact() {
 
       {/* Main Section */}
       <div className="flex flex-col items-center justify-center w-full max-w-7xl mx-auto">
-        <AnimatedTitle
-          title="C<b>O</b>NTACT US"
-          containerClass="font-extrabold hero-heading-big px-5 !text-black"
-        />
+        {/* Animated "CONTACT US" Text */}
+        <div ref={animatedTitleRef} className="text-center sm:mt-20">
+          <AnimatedTitle
+            title="C<b>O</b>NTACT US"
+            containerClass="font-extrabold hero-heading-big px-5 !text-black"
+          />
+        </div>
+
         <h2 className="font-bold text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-black">
           Feel Free To Reach Us!
         </h2>

@@ -14,7 +14,7 @@ const Contact = () => {
 
   // Function to navigate to the contact page
   const openContactPage = () => {
-    navigate('/contact');
+    navigate('contact');
   };
 
   return (
