@@ -235,7 +235,7 @@ function Contact() {
     <div className="min-h-screen flex flex-col items-center text-center px-6 bg-gradient-to-br from-yellow-300 to-yellow-100">
       {/* Header Section */}
       <div className="w-full flex justify-between items-center p-4 max-w-7xl mx-auto">
-        <div className="text-4xl font-bold text-black">E</div>
+        <div className="text-4xl font-bold text-black"></div>
         <FiMenu className="text-2xl text-black cursor-pointer hover:text-gray-700 transition-colors" />
       </div>
 
