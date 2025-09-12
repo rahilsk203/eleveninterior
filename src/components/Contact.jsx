@@ -52,11 +52,18 @@ const Contact = () => {
             className="special-font !md:text-[6.2rem] w-full font-zentry !text-4xl !font-black !leading-[.9] text-gray-900"
           />
 
-          <Button
-            title="contact us"
-            method={openContactPage}
-            containerClass="mt-10 cursor-pointer bg-violet-700 text-white"
-          />
+          <div className="flex flex-col sm:flex-row gap-4 mt-10 justify-center">
+            <Button
+              title="contact us"
+              method={openContactPage}
+              containerClass="cursor-pointer bg-violet-700 text-white"
+            />
+            <Button
+              title="project inquiry"
+              method={() => navigate('/inquiry')}
+              containerClass="cursor-pointer bg-yellow-400 text-black hover:bg-yellow-500"
+            />
+          </div>
           
           {/* Display child components here */}
           

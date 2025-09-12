@@ -143,6 +143,121 @@ body {
   .contact-clip-path-2 {
     clip-path: polygon(29% 15%, 85% 30%, 50% 100%, 10% 64%);
   }
+
+  .mobile-menu-item {
+    @apply transform transition-all duration-200 ease-out;
+  }
+
+  .mobile-menu-item:hover {
+    @apply scale-105;
+  }
+
+  .hamburger-menu {
+    @apply relative w-6 h-6 flex flex-col justify-center items-center;
+  }
+
+  .hamburger-line {
+    @apply w-full h-0.5 bg-white transition-all duration-300 ease-in-out;
+  }
+
+  .hamburger-line:nth-child(1) {
+    @apply transform origin-center;
+  }
+
+  .hamburger-line:nth-child(2) {
+    @apply my-1;
+  }
+
+  .hamburger-line:nth-child(3) {
+    @apply transform origin-center;
+  }
+
+  .hamburger-open .hamburger-line:nth-child(1) {
+    @apply rotate-45 translate-y-1.5;
+  }
+
+  .hamburger-open .hamburger-line:nth-child(2) {
+    @apply opacity-0;
+  }
+
+  .hamburger-open .hamburger-line:nth-child(3) {
+    @apply -rotate-45 -translate-y-1.5;
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 1s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slideInUp {
+    animation: slideInUp 0.8s ease-out;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeInLeft {
+    animation: fadeInLeft 0.8s ease-out;
+  }
+
+  @keyframes fadeInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-fadeInRight {
+    animation: fadeInRight 0.8s ease-out;
+  }
+
+  @keyframes fadeInRight {
+    from {
+      opacity: 0;
+      transform: translateX(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-scaleIn {
+    animation: scaleIn 0.6s ease-out;
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 }
 
 .indicator-line {

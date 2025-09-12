@@ -152,16 +152,25 @@ export const BentoCard = ({ src, title, description, isComingSoon }) => {
 };
 
 const Features = () => (
-  <section className="bg-black pb-52">
-    <div className="container mx-auto px-3 md:px-10">
-      <div className="px-5 py-32">
-        <p className="font-circular-web text-lg text-blue-50">
-          ELEVEN INTERIOR WORLD
-        </p>
-        <p className="max-w-md font-circular-web text-lg text-blue-50 opacity-50">
-          Transforming spaces with bespoke interior designs that blend style,
-          comfort, and functionality. Let us bring your dream spaces to life!
-        </p>
+  <section className="bg-black pb-52 relative overflow-hidden">
+    {/* Background Elements */}
+    <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-900 to-black"></div>
+    <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.1),transparent_50%)]"></div>
+    
+    <div className="container mx-auto px-3 md:px-10 relative z-10">
+      <div className="px-5 py-32 text-center">
+        <div className="max-w-4xl mx-auto">
+          <p className="font-circular-web text-lg text-violet-400 mb-4 tracking-wider">
+            ELEVEN INTERIOR WORLD
+          </p>
+          <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+            Our <span className="text-violet-400">Design</span> Philosophy
+          </h2>
+          <p className="max-w-2xl mx-auto font-circular-web text-lg text-gray-300 leading-relaxed">
+            Transforming spaces with bespoke interior designs that blend style,
+            comfort, and functionality. Let us bring your dream spaces to life!
+          </p>
+        </div>
       </div>
 
       <BentoTilt className="border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
