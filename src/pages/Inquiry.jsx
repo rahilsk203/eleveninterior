@@ -4,7 +4,7 @@ import AnimatedTitle from "./AnimatedTitle.jsx";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import Footer from "./Footer.jsx";
+import Footer from "../components/Footer";
 import NavBar from "../components/Navbar";
 
 // Register GSAP plugins

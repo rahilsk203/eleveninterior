@@ -2,6 +2,8 @@ import React, { useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Link } from "react-router-dom";
+import { FiArrowRight } from "react-icons/fi";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -84,7 +86,7 @@ const Gallery = () => {
     { src: "/img/gallery-4.webp", alt: "Elegant Dining Room" },
     { src: "/img/gallery-5.webp", alt: "Minimalist Office" },
     { src: "/img/gallery-6.webp", alt: "Cozy Reading Nook" }
-  ];
+  ].slice(0, 6); // Show only 6 items as preview
 
   return (
     <section ref={sectionRef} className="py-20 bg-black relative overflow-hidden">
@@ -102,7 +104,7 @@ const Gallery = () => {
           </h2>
           <p className="max-w-2xl mx-auto text-gray-300 text-lg leading-relaxed">
             Explore our collection of stunning interior design projects that showcase our creativity, 
-            attention to detail, and commitment to excellence.
+            attention to detail, and commitment to excellence. View our complete portfolio.
           </p>
         </div>
 
@@ -119,9 +121,13 @@ const Gallery = () => {
 
         {/* Call to Action */}
         <div className="text-center mt-16">
-          <button className="bg-gradient-to-r from-violet-600 to-purple-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:from-violet-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+          <Link 
+            to="/gallery"
+            className="inline-flex items-center gap-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:from-violet-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+          >
             View All Projects
-          </button>
+            <FiArrowRight className="h-5 w-5" />
+          </Link>
         </div>
       </div>
     </section>

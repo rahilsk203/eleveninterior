@@ -4,7 +4,7 @@ import AnimatedTitle from "./AnimatedTitle.jsx";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import Footer from "./Footer.jsx";
+import Footer from "../components/Footer";
 import NavBar from "../components/Navbar";
 
 // Register GSAP plugins
@@ -216,7 +216,7 @@ function Contact() {
     <div className="min-h-screen w-screen overflow-x-hidden bg-violet-100">
       {/* Navigation */}
       <NavBar />
-      
+
       {/* Main Section */}
       <div className="min-h-screen flex flex-col items-center text-center px-4 sm:px-6 pt-20 pb-20">
         {/* Section Header */}
@@ -225,37 +225,37 @@ function Contact() {
             Get In Touch With Us
           </p>
 
-          {/* Animated "CONTACT US" Text */}
+        {/* Animated "CONTACT US" Text */}
           <div ref={animatedTitleRef} className="text-center">
-            <AnimatedTitle
-              title="C<b>O</b>NTACT US"
-              containerClass="font-extrabold hero-heading-big px-5 !text-black"
-            />
-          </div>
+          <AnimatedTitle
+            title="C<b>O</b>NTACT US"
+            containerClass="font-extrabold hero-heading-big px-5 !text-black"
+          />
+        </div>
 
           <h2 className="font-bold text-2xl sm:text-4xl md:text-5xl lg:text-6xl text-black leading-tight">
-            Feel Free To Reach Us!
-          </h2>
+          Feel Free To Reach Us!
+        </h2>
           <p className="text-gray-700 mt-4 text-base sm:text-lg max-w-2xl leading-relaxed">
             Have a project in mind or need expert advice? Fill out the form below, and our team will get back to you promptly! Let's create something amazing together.
-          </p>
+        </p>
         </div>
 
         {/* Contact Form and Info */}
         <div className="flex flex-col items-center justify-center w-full max-w-4xl mx-auto space-y-8">
-          <ContactForm
-            formRef={formRef}
-            handleSubmit={handleSubmit}
-            name={name}
-            setName={setName}
-            number={number}
-            setNumber={setNumber}
-            message={message}
-            setMessage={setMessage}
-          />
-          <CompanyInfo companyInfoRef={companyInfoRef} />
-          <MapSection mapRef={mapRef} />
-        </div>
+        <ContactForm
+          formRef={formRef}
+          handleSubmit={handleSubmit}
+          name={name}
+          setName={setName}
+          number={number}
+          setNumber={setNumber}
+          message={message}
+          setMessage={setMessage}
+        />
+        <CompanyInfo companyInfoRef={companyInfoRef} />
+        <MapSection mapRef={mapRef} />
+      </div>
       </div>
       
       <Footer />

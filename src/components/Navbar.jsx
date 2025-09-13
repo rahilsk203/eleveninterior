@@ -5,10 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import { TiLocationArrow } from "react-icons/ti"; // Corrected import
 import { Link } from "react-scroll";
 import { HiMenuAlt3, HiX } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
 
 import Button from "./Button";
 
-const navItems = ["About", "Features", "Story", "Testimonials", "Gallery", "Contact"];
+const navItems = ["Home", "About", "Features", "Story", "Testimonials", "Gallery", "Contact", "Inquiry"];
 
 const NavBar = () => {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -20,6 +21,7 @@ const NavBar = () => {
   const audioElementRef = useRef(null);
   const navContainerRef = useRef(null);
   const mobileMenuRef = useRef(null);
+  const navigate = useNavigate();
 
   const { y: currentScrollY } = useWindowScroll();
 
@@ -34,6 +36,24 @@ const NavBar = () => {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const handleNavigation = (item) => {
+    closeMobileMenu();
+    
+    // Handle page navigation
+    if (item === "Home") {
+      navigate("/");
+    } else if (item === "Contact") {
+      navigate("/contact");
+    } else if (item === "Inquiry") {
+      navigate("/inquiry");
+    } else if (item === "Gallery") {
+      navigate("/gallery");
+    } else if (item === "Features") {
+      navigate("/features");
+    }
+    // For other items (About, Story, etc.), they will use scroll navigation
   };
 
   useEffect(() => {
@@ -136,17 +156,32 @@ const NavBar = () => {
           <div className="flex h-full items-center">
             {/* Navigation Links (Hidden on Mobile) */}
             <div className="hidden md:block">
-              {navItems.map((item, index) => (
-                <Link
-                  key={index}
-                  to={item.toLowerCase()}
-                  smooth={true}
-                  duration={500}
-                  className="nav-hover-btn cursor-pointer"
-                >
-                  {item}
-                </Link>
-              ))}
+              {navItems.map((item, index) => {
+                // Handle page navigation for specific items
+                if (item === "Home" || item === "Contact" || item === "Inquiry" || item === "Gallery" || item === "Features") {
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => handleNavigation(item)}
+                      className="nav-hover-btn cursor-pointer"
+                    >
+                      {item}
+                    </button>
+                  );
+                }
+                // Handle scroll navigation for section items
+                return (
+                  <Link
+                    key={index}
+                    to={item.toLowerCase()}
+                    smooth={true}
+                    duration={500}
+                    className="nav-hover-btn cursor-pointer"
+                  >
+                    {item}
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Audio Button (Hidden on Mobile) */}
@@ -201,18 +236,33 @@ const NavBar = () => {
           >
             {/* Mobile Navigation Links */}
             <div className="space-y-4">
-              {navItems.map((item, index) => (
-                <Link
-                  key={index}
-                  to={item.toLowerCase()}
-                  smooth={true}
-                  duration={500}
-                  onClick={closeMobileMenu}
-                  className="mobile-menu-item block text-white text-lg font-medium py-3 px-4 rounded-lg hover:bg-white/10 transition-all duration-200 border-b border-white/10 last:border-b-0"
-                >
-                  {item}
-                </Link>
-              ))}
+              {navItems.map((item, index) => {
+                // Handle page navigation for specific items
+                if (item === "Home" || item === "Contact" || item === "Inquiry" || item === "Gallery" || item === "Features") {
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => handleNavigation(item)}
+                      className="mobile-menu-item block text-white text-lg font-medium py-3 px-4 rounded-lg hover:bg-white/10 transition-all duration-200 border-b border-white/10 last:border-b-0 w-full text-left"
+                    >
+                      {item}
+                    </button>
+                  );
+                }
+                // Handle scroll navigation for section items
+                return (
+                  <Link
+                    key={index}
+                    to={item.toLowerCase()}
+                    smooth={true}
+                    duration={500}
+                    onClick={closeMobileMenu}
+                    className="mobile-menu-item block text-white text-lg font-medium py-3 px-4 rounded-lg hover:bg-white/10 transition-all duration-200 border-b border-white/10 last:border-b-0"
+                  >
+                    {item}
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Mobile Audio Button */}

@@ -25,23 +25,46 @@ const Hero = () => {
 
   const totalVideos = 4; // Total number of videos
   const nextVdRef = useRef(null); // Ref for the next video element
+  const mainVideoRef = useRef(null); // Ref for the main background video
 
-  // Function to handle video load event
+  // Function to handle video load event with optimization
   const handleVideoLoad = () => {
-    setLoadedVideos((prev) => prev + 1);
+    setLoadedVideos((prev) => {
+      const newCount = prev + 1;
+      // Only wait for the main video to load, not all videos
+      if (newCount >= 1) {
+        setLoading(false);
+      }
+      return newCount;
+    });
   };
 
-  // Effect to check if all videos are loaded
+  // Optimized video loading - only load main video initially
   useEffect(() => {
-    if (loadedVideos === totalVideos - 1) {
-      setLoading(false); // Set loading to false once all videos are loaded
-    }
-  }, [loadedVideos]);
+    // Set a timeout to show content even if video takes too long
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 3000); // 3 second timeout
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  // Function to preload video
+  const preloadVideo = (src) => {
+    const video = document.createElement('video');
+    video.src = src;
+    video.preload = 'metadata';
+    video.muted = true;
+  };
 
   // Function to handle mini video click
   const handleMiniVdClick = () => {
     setHasClicked(true); // Set hasClicked to true
-    setCurrentIndex((prevIndex) => (prevIndex % totalVideos) + 1); // Update currentIndex
+    const newIndex = (currentIndex % totalVideos) + 1;
+    setCurrentIndex(newIndex);
+    
+    // Preload the next video for smoother transition
+    preloadVideo(getVideoSrc((newIndex % totalVideos) + 1));
   };
 
   // GSAP animation for video transition
@@ -121,6 +144,16 @@ const Hero = () => {
         id="video-frame"
         className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-blue-75"
       >
+        {/* Fallback background image for faster loading */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('/img/hero-1.webp')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        />
+        
         <div>
           {/* Mini video preview */}
           <div className="mask-clip-path absolute-center absolute z-50 size-64 cursor-pointer overflow-hidden rounded-lg">
@@ -134,9 +167,10 @@ const Hero = () => {
                   src={getVideoSrc((currentIndex % totalVideos) + 1)}
                   loop
                   muted
+                  playsInline
+                  preload="none"
                   id="current-video"
                   className="size-64 origin-center scale-150 object-cover object-center"
-                  onLoadedData={handleVideoLoad}
                 />
               </div>
             </VideoPreview>
@@ -148,21 +182,26 @@ const Hero = () => {
             src={getVideoSrc(currentIndex)}
             loop
             muted
+            playsInline
+            preload="none"
             id="next-video"
             className="absolute-center invisible absolute z-20 size-64 object-cover object-center"
-            onLoadedData={handleVideoLoad}
           />
 
           {/* Main background video */}
           <video
+            ref={mainVideoRef}
             src={getVideoSrc(
               currentIndex === totalVideos - 1 ? 1 : currentIndex
             )}
             autoPlay
             loop
             muted
+            playsInline
+            preload="metadata"
             className="absolute left-0 top-0 size-full object-cover object-center"
             onLoadedData={handleVideoLoad}
+            onCanPlay={handleVideoLoad}
           />
         </div>
 
