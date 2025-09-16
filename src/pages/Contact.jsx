@@ -85,7 +85,7 @@ const CompanyInfo = ({ companyInfoRef }) => (
       {/* Address, Phone, Email, Work Hours */}
       <div className="flex items-start group">
         <a
-          href="https://www.google.com/maps?q=123+Main+Street,City,Country"
+          href="https://www.google.com/maps?q=96b+Central+avenue+Near+Central+metro+gate+no+6"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform"
@@ -94,35 +94,35 @@ const CompanyInfo = ({ companyInfoRef }) => (
         </a>
         <div>
           <span className="text-gray-300 font-medium">Address:</span>
-          <span className="text-white block">123 Main Street, City, Country</span>
+          <span className="text-white block">96b Central avenue<br />Near Central metro gate no 6</span>
         </div>
       </div>
 
       <div className="flex items-start group">
-        <a href="tel:+1234567890" className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform">
+        <a href="tel:+917667974947" className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform">
           <FiPhone className="text-violet-400 w-6 h-6 mr-4 flex-shrink-0 cursor-pointer" />
         </a>
         <div>
           <span className="text-gray-300 font-medium">Phone:</span>
-          <span className="text-white block">+123 456 7890</span>
+          <span className="text-white block">7667974947</span>
         </div>
       </div>
 
       <div className="flex items-start group">
-        <a href="mailto:info@eleveninteriorworld.com" className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform">
+        <a href="mailto:eleveninteriorworld@gmail.com" className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform">
           <FiMail className="text-violet-400 w-6 h-6 mr-4 flex-shrink-0 cursor-pointer" />
         </a>
         <div>
           <span className="text-gray-300 font-medium">Email:</span>
-          <span className="text-white block">info@eleveninteriorworld.com</span>
+          <span className="text-white block">eleveninteriorworld@gmail.com</span>
         </div>
       </div>
 
       <div className="flex items-start group">
         <FiClock className="text-violet-400 w-6 h-6 mr-4 flex-shrink-0" />
         <div>
-          <span className="text-gray-300 font-medium">Work Hours:</span>
-          <span className="text-white block">Mon - Fri: 9 AM - 6 PM</span>
+          <span className="text-gray-300 font-medium">Office Hours:</span>
+          <span className="text-white block">Mon - Sat: 10 AM - 9:30 PM<br />Sunday: Closed</span>
         </div>
       </div>
     </div>
@@ -139,13 +139,14 @@ const MapSection = ({ mapRef }) => (
       <h3 className="text-xl font-bold text-white text-center">Find Us Here</h3>
     </div>
     <iframe
-      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.835434509374!2d144.9537353153166!3d-37.816279742021665!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad642af0f11fd81%3A0xf577d2a2c0b4a1a4!2s123%20Main%20St%2C%20City%20VIC%203000%2C%20Australia!5e0!3m2!1sen!2sus!4v1633039290000!5m2!1sen!2sus"
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3001.0!2d77.2090!3d28.6139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDM2JzUwLjAiTiA3N8KwMTInMzIuNCJF!5e0!3m2!1sen!2sin!4v1690000000000!5m2!1sen!2sin"
       width="100%"
       height="400"
       style={{ border: 0 }}
       allowFullScreen=""
       loading="lazy"
       className="w-full"
+      title="96b Central avenue Near Central metro gate no 6"
     ></iframe>
   </div>
 );
@@ -209,7 +210,7 @@ function Contact() {
     e.preventDefault();
     const subject = `Contact Form Submission from ${name}`;
     const body = `Name: ${name}%0D%0APhone: ${number}%0D%0AMessage: ${message}`;
-    window.location.href = `mailto:info@eleveninteriorworld.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:eleveninteriorworld@gmail.com?subject=${subject}&body=${body}`;
   };
 
   return (

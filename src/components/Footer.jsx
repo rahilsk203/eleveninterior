@@ -102,25 +102,25 @@ const Footer = () => {
               <div className="flex items-start space-x-3">
                 <FaMapPin className="w-4 h-4 text-violet-400 mt-1 flex-shrink-0" />
                 <p className="text-gray-300 text-sm">
-                  123 Main Street, City, Country
+                  96b Central avenue<br />Near Central metro gate no 6
                 </p>
               </div>
               <div className="flex items-center space-x-3">
                 <FaPhone className="w-4 h-4 text-violet-400 flex-shrink-0" />
-                <a href="tel:+1234567890" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
-                  +123 456 7890
+                <a href="tel:+917667974947" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
+                  7667974947
                 </a>
               </div>
               <div className="flex items-center space-x-3">
                 <FaEnvelope className="w-4 h-4 text-violet-400 flex-shrink-0" />
-                <a href="mailto:info@eleveninteriorworld.com" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
-                  info@eleveninteriorworld.com
+                <a href="mailto:eleveninteriorworld@gmail.com" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
+                  eleveninteriorworld@gmail.com
                 </a>
               </div>
               <div className="flex items-start space-x-3">
                 <FaClock className="w-4 h-4 text-violet-400 mt-1 flex-shrink-0" />
                 <p className="text-gray-300 text-sm">
-                  Mon - Fri: 9 AM - 6 PM
+                  Mon - Sat: 10 AM - 9:30 PM<br />Sunday: Closed
                 </p>
               </div>
             </div>
