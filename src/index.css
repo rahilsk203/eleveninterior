@@ -389,49 +389,82 @@ body {
   }
 }
 
-/* Optimized water-like effects for Story component */
-.water-ripple {
-  animation: waterRipple 1.2s ease-out forwards;
+/* High-performance Stats component optimizations */
+.stats-container {
+  contain: layout style paint;
   will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
 }
 
-.water-float {
-  animation: waterFloat 4s ease-in-out infinite;
+.stat-number {
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  font-feature-settings: 'tnum' 1; /* Tabular numbers for better alignment */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.stat-card {
+  contain: layout style;
   will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-.water-particle {
-  animation: waterParticle 3.5s ease-in-out infinite;
-  will-change: transform, opacity;
+.stat-card:hover {
+  transform: translate3d(0, 0, 0) scale(1.05);
 }
 
-@keyframes waterRipple {
+/* GPU-accelerated background gradients */
+.stats-bg-gradient {
+  will-change: auto;
+  transform: translate3d(0, 0, 0);
+  contain: strict;
+}
+
+/* Optimized animations with reduced repaints */
+@keyframes statsSlideUp {
   0% {
-    transform: scale3d(0, 0, 1);
-    opacity: 1;
+    opacity: 0;
+    transform: translate3d(0, 50px, 0);
   }
   100% {
-    transform: scale3d(2, 2, 1);
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes statsNumberScale {
+  0% {
     opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0);
   }
-}
-
-@keyframes waterFloat {
-  0%, 100% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
-  }
-  50% {
-    transform: translate3d(0, -8px, 0) rotate(0.5deg);
-  }
-}
-
-@keyframes waterParticle {
-  0%, 100% {
+  100% {
+    opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.2;
   }
-  50% {
-    transform: translate3d(0, -15px, 0) scale(1.1);
-    opacity: 0.4;
-  }
+}
+
+.animate-stats-slide-up {
+  animation: statsSlideUp 1s ease-out forwards;
+}
+
+.animate-stats-number-scale {
+  animation: statsNumberScale 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* Critical CSS inlining for above-the-fold content */
+.stats-critical {
+  font-display: swap;
+  text-rendering: optimizeSpeed;
+}
+
+/* Reduce layout shifts */
+.stats-grid {
+  contain: layout;
+}
+
+.stats-grid > * {
+  contain: layout style;
 }
