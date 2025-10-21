@@ -1,8 +1,43 @@
 import { FaFacebook, FaInstagram, FaTwitter, FaLinkedin, FaYoutube, FaMapPin, FaPhone, FaEnvelope, FaClock } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { imageService } from "../services/imageService"; // Import image service for backend integration
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const [logoImages, setLogoImages] = useState([]); // State for backend logo images
+
+  // Fetch logo images from backend on component mount
+  useEffect(() => {
+    const fetchLogoImages = async () => {
+      try {
+        const images = await imageService.getLogoImages();
+        setLogoImages(images);
+        console.log('Fetched logo images from backend:', images);
+      } catch (error) {
+        console.error('Failed to fetch logo images from backend:', error);
+        // Will use fallback image
+      }
+    };
+
+    fetchLogoImages();
+    
+    // Prefetch commonly accessed images
+    imageService.prefetchImages(['contact', 'gallery']);
+  }, []);
+
+  // Function to get logo image source with fallback
+  const getLogoImageSrc = () => {
+    if (logoImages.length > 0) {
+      // Get optimized URL for logo from backend
+      const imageUrl = imageService.getOptimizedImageUrl(logoImages[0], 'medium');
+      if (imageUrl) {
+        return imageUrl;
+      }
+    }
+    // Fallback to local logo
+    return "/img/logo1.png";
+  };
 
   const socialLinks = [
     { href: "https://facebook.com", icon: <FaFacebook />, label: "Facebook" },
@@ -43,7 +78,7 @@ const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <img src="/img/logo1.png" alt="Eleven Interior" className="w-10 h-10 rounded-full" />
+              <img src={getLogoImageSrc()} alt="Eleven Interior" className="w-10 h-10 rounded-full" />
               <h3 className="text-2xl font-bold text-white">ELEVEN INTERIOR</h3>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed">
@@ -102,25 +137,25 @@ const Footer = () => {
               <div className="flex items-start space-x-3">
                 <FaMapPin className="w-4 h-4 text-violet-400 mt-1 flex-shrink-0" />
                 <p className="text-gray-300 text-sm">
-                  96b Central avenue<br />Near Central metro gate no 6
+                  123 Main Street, City, Country
                 </p>
               </div>
               <div className="flex items-center space-x-3">
                 <FaPhone className="w-4 h-4 text-violet-400 flex-shrink-0" />
-                <a href="tel:+917667974947" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
-                  7667974947
+                <a href="tel:+1234567890" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
+                  +123 456 7890
                 </a>
               </div>
               <div className="flex items-center space-x-3">
                 <FaEnvelope className="w-4 h-4 text-violet-400 flex-shrink-0" />
-                <a href="mailto:eleveninteriorworld@gmail.com" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
-                  eleveninteriorworld@gmail.com
+                <a href="mailto:info@eleveninteriorworld.com" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
+                  info@eleveninteriorworld.com
                 </a>
               </div>
               <div className="flex items-start space-x-3">
                 <FaClock className="w-4 h-4 text-violet-400 mt-1 flex-shrink-0" />
                 <p className="text-gray-300 text-sm">
-                  Mon - Sat: 10 AM - 9:30 PM<br />Sunday: Closed
+                  Mon - Fri: 9 AM - 6 PM
                 </p>
               </div>
             </div>

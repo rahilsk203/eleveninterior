@@ -6,8 +6,6 @@ import Story from "./components/Story";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
-import Testimonials from "./components/Testimonials";
-import Gallery from "./components/Gallery";
 import { Suspense, lazy } from "react";
 
 // Lazy load components for better performance

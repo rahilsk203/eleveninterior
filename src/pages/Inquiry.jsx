@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import Footer from "../components/Footer";
 import NavBar from "../components/Navbar";
+import { inquiryService } from "../services/inquiryService";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -257,11 +258,38 @@ function Inquiry() {
     setIsSubmitting(true);
 
     try {
-      // Simulate form submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Client-side validation
+      if (!formData.name || formData.name.length < 2) {
+        throw new Error('Name is required and must be at least 2 characters');
+      }
       
-      // Here you would typically send the data to your backend
-      console.log('Form submitted:', formData);
+      if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
+        throw new Error('Valid email is required');
+      }
+      
+      if (!formData.phone || formData.phone.length < 10) {
+        throw new Error('Phone number is required and must be at least 10 characters');
+      }
+      
+      if (!formData.location || formData.location.length < 2) {
+        throw new Error('Location is required and must be at least 2 characters');
+      }
+      
+      if (!formData.message || formData.message.length < 10) {
+        throw new Error('Project description must be at least 10 characters long');
+      }
+      
+      // Map form data to match backend requirements
+      const inquiryData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        location: formData.location,
+        project_description: formData.message
+      };
+      
+      // Submit inquiry to backend
+      const result = await inquiryService.submitInquiry(inquiryData);
       
       setIsSubmitted(true);
       
@@ -279,7 +307,7 @@ function Inquiry() {
       
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('There was an error submitting your inquiry. Please try again.');
+      alert(`There was an error submitting your inquiry: ${error.message}. Please try again.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -312,7 +340,7 @@ function Inquiry() {
   }
 
   return (
-    <div className="min-h-screen w-screen overflow-x-hidden bg-violet-100">
+    <div className="min-h-screen w-screen overflow-x-hidden bg-violet-100 pt-20">
       {/* Navigation */}
       <NavBar />
       

@@ -8,6 +8,7 @@ import { HiMenuAlt3, HiX } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 
 import Button from "./Button";
+import { imageService } from "../services/imageService"; // Import image service for backend integration
 
 const navItems = ["Home", "About", "Features", "Story", "Testimonials", "Gallery", "Contact", "Inquiry"];
 
@@ -17,6 +18,7 @@ const NavBar = () => {
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [logoImages, setLogoImages] = useState([]); // State for backend logo images
 
   const audioElementRef = useRef(null);
   const navContainerRef = useRef(null);
@@ -24,6 +26,38 @@ const NavBar = () => {
   const navigate = useNavigate();
 
   const { y: currentScrollY } = useWindowScroll();
+
+  // Fetch logo images from backend on component mount
+  useEffect(() => {
+    const fetchLogoImages = async () => {
+      try {
+        const images = await imageService.getLogoImages();
+        setLogoImages(images);
+        console.log('Fetched logo images from backend:', images);
+      } catch (error) {
+        console.error('Failed to fetch logo images from backend:', error);
+        // Will use fallback image
+      }
+    };
+
+    fetchLogoImages();
+    
+    // Prefetch commonly accessed images
+    imageService.prefetchImages(['contact', 'gallery']);
+  }, []);
+
+  // Function to get logo image source with fallback
+  const getLogoImageSrc = () => {
+    if (logoImages.length > 0) {
+      // Get optimized URL for logo from backend
+      const imageUrl = imageService.getOptimizedImageUrl(logoImages[0], 'medium');
+      if (imageUrl) {
+        return imageUrl;
+      }
+    }
+    // Fallback to local logo
+    return "/img/logo1.png";
+  };
 
   const toggleAudioIndicator = () => {
     setIsAudioPlaying((prev) => !prev);
@@ -143,7 +177,7 @@ const NavBar = () => {
         <nav className="flex size-full items-center justify-between p-4">
           {/* Logo and Product Button */}
           <div className="flex items-center gap-7">
-            <img src="/img/logo1.png" alt="logo" className="w-10 rounded-full" />
+            <img src={getLogoImageSrc()} alt="logo" className="w-10 rounded-full" />
             <Button
               id="product-button"
               title="Products"

@@ -6,15 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:analyze": "vite build --analyze",
-    "build:perf": "cross-env NODE_ENV=production vite build --minify terser",
-    "preview": "vite preview",
-    "preview:network": "vite preview --host 0.0.0.0",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "type-check": "tsc --noEmit",
-    "clean": "rimraf dist",
-    "analyze": "npx vite-bundle-analyzer dist"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@gsap/react": "^2.1.1",

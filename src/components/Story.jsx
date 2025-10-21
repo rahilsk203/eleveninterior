@@ -1,5 +1,6 @@
 import gsap from "gsap";
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import { imageService } from "../services/imageService"; // Import image service for backend integration
 
 import Button from "./Button";
 import AnimatedTitle from "./AnimatedTitle";
@@ -11,6 +12,40 @@ const FloatingImage = () => {
   const lastMoveTimeRef = useRef(0);
   const [isInteracting, setIsInteracting] = useState(false);
   const [ripples, setRipples] = useState([]);
+  const [entranceImages, setEntranceImages] = useState([]); // State for backend images
+  const [loading, setLoading] = useState(true); // Loading state
+
+  // Fetch entrance images from backend on component mount
+  useEffect(() => {
+    const fetchEntranceImages = async () => {
+      try {
+        setLoading(true);
+        const images = await imageService.getEntranceImages();
+        setEntranceImages(images);
+        console.log('Fetched entrance images from backend:', images);
+      } catch (error) {
+        console.error('Failed to fetch entrance images from backend:', error);
+        // Will use fallback image
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEntranceImages();
+  }, []);
+
+  // Function to get image source with fallback
+  const getEntranceImageSrc = () => {
+    if (entranceImages.length > 0) {
+      // Get optimized URL for high quality from backend
+      const imageUrl = imageService.getOptimizedImageUrl(entranceImages[0], 'high');
+      if (imageUrl) {
+        return imageUrl;
+      }
+    }
+    // Fallback to local image
+    return "/img/entrance.webp";
+  };
 
   // Optimized ripple effect with throttling
   const createRipple = useCallback((x, y) => {
@@ -190,8 +225,8 @@ const FloatingImage = () => {
               <div className="story-img-content">
                 <img
                   ref={frameRef}
-                  src="/img/entrance.webp"
-                  alt="entrance.webp"
+                  src={getEntranceImageSrc()} // Use backend image with fallback
+                  alt="entrance"
                   className="object-contain water-float"
                   style={{
                     filter: isInteracting ? 'brightness(1.05) contrast(1.02)' : 'brightness(1) contrast(1)',

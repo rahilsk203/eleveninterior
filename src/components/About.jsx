@@ -1,12 +1,52 @@
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/all";
+import { useState, useEffect } from "react";
+import { imageService } from "../services/imageService"; // Import image service for backend integration
 
 import AnimatedTitle from "./AnimatedTitle";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const About = () => {
+  const [aboutImages, setAboutImages] = useState([]); // State for backend images
+  const [loading, setLoading] = useState(true); // Loading state
+
+  // Fetch about images from backend on component mount
+  useEffect(() => {
+    const fetchAboutImages = async () => {
+      try {
+        setLoading(true);
+        const images = await imageService.getAboutImages(); // Use specific method for about images
+        setAboutImages(images);
+        console.log('Fetched about images from backend:', images);
+      } catch (error) {
+        console.error('Failed to fetch about images from backend:', error);
+        // Will use fallback image
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAboutImages();
+    
+    // Prefetch images for other sections
+    imageService.prefetchImages(['gallery', 'contact']);
+  }, []);
+
+  // Function to get image source with fallback
+  const getAboutImageSrc = () => {
+    if (aboutImages.length > 0) {
+      // Get optimized URL for high quality from backend
+      const imageUrl = imageService.getOptimizedImageUrl(aboutImages[0], 'high');
+      if (imageUrl) {
+        return imageUrl;
+      }
+    }
+    // Fallback to local image
+    return "img/about.webp";
+  };
+
   useGSAP(() => {
     const clipAnimation = gsap.timeline({
       scrollTrigger: {
@@ -58,7 +98,7 @@ const About = () => {
       <div className="h-dvh w-screen" id="clip">
         <div className="mask-clip-path about-image relative overflow-hidden">
           <img
-            src="img/about.webp"
+            src={getAboutImageSrc()} // Use backend image with fallback
             alt="Background"
             className="absolute left-0 top-0 h-full w-full object-cover"
           />

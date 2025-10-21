@@ -1,9 +1,10 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Link } from "react-router-dom";
 import { FiArrowRight } from "react-icons/fi";
+import { imageService } from "../services/imageService"; // Import image service for backend integration
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -12,22 +13,25 @@ const GalleryItem = ({ src, alt, index }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   useGSAP(() => {
-    gsap.fromTo(itemRef.current,
-      { opacity: 0, y: 50, scale: 0.9 },
-      {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 0.8,
-        delay: index * 0.1,
-        scrollTrigger: {
-          trigger: itemRef.current,
-          start: "top 85%",
-          end: "bottom 20%",
-          toggleActions: "play none none reverse"
+    // Check if itemRef.current exists before animating
+    if (itemRef.current) {
+      gsap.fromTo(itemRef.current,
+        { opacity: 0, y: 50, scale: 0.9 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.8,
+          delay: index * 0.1,
+          scrollTrigger: {
+            trigger: itemRef.current,
+            start: "top 85%",
+            end: "bottom 20%",
+            toggleActions: "play none none reverse"
+          }
         }
-      }
-    );
+      );
+    }
   }, []);
 
   return (
@@ -60,33 +64,96 @@ const GalleryItem = ({ src, alt, index }) => {
 const Gallery = () => {
   const sectionRef = useRef(null);
   const titleRef = useRef(null);
+  const [galleryImages, setGalleryImages] = useState([]); // State for backend images
+  const [loading, setLoading] = useState(true); // Loading state
 
-  useGSAP(() => {
-    // Animate title
-    gsap.fromTo(titleRef.current, 
-      { opacity: 0, y: 50 },
-      { 
-        opacity: 1, 
-        y: 0, 
-        duration: 1,
-        scrollTrigger: {
-          trigger: titleRef.current,
-          start: "top 80%",
-          end: "bottom 20%",
-          toggleActions: "play none none reverse"
-        }
+  // Fetch gallery images from backend on component mount
+  useEffect(() => {
+    const fetchGalleryImages = async () => {
+      try {
+        setLoading(true);
+        const images = await imageService.getGalleryImages();
+        setGalleryImages(images);
+        console.log('Fetched gallery images from backend:', images);
+      } catch (error) {
+        console.error('Failed to fetch gallery images from backend:', error);
+        // Will use fallback images
+      } finally {
+        setLoading(false);
       }
-    );
+    };
+
+    fetchGalleryImages();
+    
+    // Prefetch images for other sections
+    imageService.prefetchImages(['contact', 'entrance', 'about']);
   }, []);
 
-  const galleryItems = [
-    { src: "/img/gallery-1.webp", alt: "Modern Living Room" },
-    { src: "/img/gallery-2.webp", alt: "Luxury Bedroom" },
-    { src: "/img/gallery-3.webp", alt: "Contemporary Kitchen" },
-    { src: "/img/gallery-4.webp", alt: "Elegant Dining Room" },
-    { src: "/img/gallery-5.webp", alt: "Minimalist Office" },
-    { src: "/img/gallery-6.webp", alt: "Cozy Reading Nook" }
-  ].slice(0, 6); // Show only 6 items as preview
+  // Function to get image source with fallback
+  const getImageSrc = (imageData, index) => {
+    if (imageData && imageData.urls) {
+      // Get optimized URL for medium quality from backend
+      const imageUrl = imageService.getOptimizedImageUrl(imageData, 'medium');
+      if (imageUrl) {
+        return imageUrl;
+      }
+    }
+    // Fallback to local images
+    return `/img/gallery-${index + 1}.webp`;
+  };
+
+  // Function to get image alt text
+  const getImageAlt = (imageData, index) => {
+    if (imageData && imageData.content && imageData.content.title) {
+      return imageData.content.title;
+    }
+    // Fallback alt text
+    const fallbackTitles = [
+      "Modern Living Room",
+      "Luxury Bedroom",
+      "Contemporary Kitchen",
+      "Elegant Dining Room",
+      "Minimalist Office",
+      "Cozy Reading Nook"
+    ];
+    return fallbackTitles[index] || `Gallery Image ${index + 1}`;
+  };
+
+  useGSAP(() => {
+    // Check if titleRef.current exists before animating
+    if (titleRef.current) {
+      // Animate title
+      gsap.fromTo(titleRef.current, 
+        { opacity: 0, y: 50 },
+        { 
+          opacity: 1, 
+          y: 0, 
+          duration: 1,
+          scrollTrigger: {
+            trigger: titleRef.current,
+            start: "top 80%",
+            end: "bottom 20%",
+            toggleActions: "play none none reverse"
+          }
+        }
+      );
+    }
+  }, []);
+
+  // Use backend images if available, otherwise fallback to local images
+  const galleryItems = galleryImages.length > 0 
+    ? galleryImages.slice(0, 6).map((imageData, index) => ({
+        src: getImageSrc(imageData, index),
+        alt: getImageAlt(imageData, index)
+      }))
+    : [
+        { src: "/img/gallery-1.webp", alt: "Modern Living Room" },
+        { src: "/img/gallery-2.webp", alt: "Luxury Bedroom" },
+        { src: "/img/gallery-3.webp", alt: "Contemporary Kitchen" },
+        { src: "/img/gallery-4.webp", alt: "Elegant Dining Room" },
+        { src: "/img/gallery-5.webp", alt: "Minimalist Office" },
+        { src: "/img/gallery-6.webp", alt: "Cozy Reading Nook" }
+      ].slice(0, 6); // Show only 6 items as preview
 
   return (
     <section ref={sectionRef} className="py-20 bg-black relative overflow-hidden">

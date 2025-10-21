@@ -1,5 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { TiLocationArrow } from "react-icons/ti";
+import { videoService } from "../services/videoService"; // Video service for fetching backend videos
+import { imageService } from "../services/imageService"; // Image service for prefetching
 
 export const BentoTilt = ({ children, className = "" }) => {
   const [transformStyle, setTransformStyle] = useState("");
@@ -50,7 +52,7 @@ export const BentoTilt = ({ children, className = "" }) => {
   );
 };
 
-export const BentoCard = ({ src, title, description, isComingSoon }) => {
+export const BentoCard = ({ videoSrc, title, description, isComingSoon }) => {
   const videoRef = useRef(null);
   const hoverButtonRef = useRef(null);
   const [hoverOpacity, setHoverOpacity] = useState(0);
@@ -115,13 +117,19 @@ export const BentoCard = ({ src, title, description, isComingSoon }) => {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <video
-        ref={videoRef}
-        src={src}
-        loop
-        muted
-        className="absolute left-0 top-0 size-full object-cover object-center"
-      />
+      {videoSrc ? (
+        <video
+          ref={videoRef}
+          src={videoSrc}
+          loop
+          muted
+          className="absolute left-0 top-0 size-full object-cover object-center"
+        />
+      ) : (
+        <div className="absolute left-0 top-0 size-full bg-gray-200 flex items-center justify-center">
+          <div className="text-gray-500">Video not available</div>
+        </div>
+      )}
       <div className="relative z-10 flex size-full flex-col justify-between p-5 text-blue-50">
         <div>
           <h1 className="bento-title special-font">{title}</h1>
@@ -151,102 +159,159 @@ export const BentoCard = ({ src, title, description, isComingSoon }) => {
   );
 };
 
-const Features = () => (
-  <section className="bg-black pb-52 relative overflow-hidden">
-    {/* Background Elements */}
-    <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-900 to-black"></div>
-    <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.1),transparent_50%)]"></div>
+const Features = () => {
+  const [featureVideos, setFeatureVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch feature videos from backend on component mount
+  useEffect(() => {
+    const fetchFeatureVideos = async () => {
+      try {
+        setLoading(true);
+        const videos = await videoService.getFeatureVideos();
+        setFeatureVideos(videos);
+        console.log('Fetched feature videos:', videos);
+      } catch (error) {
+        console.error('Failed to fetch feature videos:', error);
+        // Component will use fallback videos
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeatureVideos();
     
-    <div className="container mx-auto px-3 md:px-10 relative z-10">
-      <div className="px-5 py-32 text-center">
-        <div className="max-w-4xl mx-auto">
-          <p className="font-circular-web text-lg text-violet-400 mb-4 tracking-wider">
-            ELEVEN INTERIOR WORLD
-          </p>
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Our <span className="text-violet-400">Design</span> Philosophy
-          </h2>
-          <p className="max-w-2xl mx-auto font-circular-web text-lg text-gray-300 leading-relaxed">
-            Transforming spaces with bespoke interior designs that blend style,
-            comfort, and functionality. Let us bring your dream spaces to life!
-          </p>
+    // Prefetch other media for anticipated navigation
+    videoService.prefetchVideos(['hero']);
+    // Prefetch images for the gallery and about sections
+    imageService.prefetchImages(['gallery', 'about']);
+  }, []);
+
+  // Function to get video source by index
+  const getFeatureVideoSrc = (index) => {
+    if (featureVideos.length > index) {
+      // Get optimized URL for HD quality
+      const videoUrl = videoService.getOptimizedVideoUrl(featureVideos[index], 'hd');
+      if (videoUrl) {
+        return videoUrl;
+      }
+    }
+    // Fallback to local videos
+    return `videos/feature-${index + 1}.mp4`;
+  };
+
+  return (
+    <section className="bg-black pb-52 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-900 to-black"></div>
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.1),transparent_50%)]"></div>
+      
+      <div className="container mx-auto px-3 md:px-10 relative z-10">
+        <div className="px-5 py-32 text-center">
+          <div className="max-w-4xl mx-auto">
+            <p className="font-circular-web text-lg text-violet-400 mb-4 tracking-wider">
+              ELEVEN INTERIOR WORLD
+            </p>
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+              Our <span className="text-violet-400">Design</span> Philosophy
+            </h2>
+            <p className="max-w-2xl mx-auto font-circular-web text-lg text-gray-300 leading-relaxed">
+              Transforming spaces with bespoke interior designs that blend style,
+              comfort, and functionality. Let us bring your dream spaces to life!
+            </p>
+          </div>
+        </div>
+
+        <BentoTilt className="border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
+          <BentoCard
+            videoSrc={getFeatureVideoSrc(0)}
+            title={
+              <>
+                luxu<b>r</b>y
+              </>
+            }
+            description="Experience the Art of Luxury – Redefining Interiors with Elegance and Precision. Eleven Interiors – Where Dreams Turn Into Spaces."
+            isComingSoon
+          />
+        </BentoTilt>
+
+        <div className="grid h-[135vh] w-full grid-cols-2 grid-rows-3 gap-7">
+          <BentoTilt className="bento-tilt_1 row-span-1 md:col-span-1 md:row-span-2">
+            <BentoCard
+              videoSrc={getFeatureVideoSrc(1)}
+              title={
+                <>
+                  bedro<b>o</b>m
+                </>
+              }
+              description="Dream. Relax. Repeat – Crafted Elegance by Eleven Interiors."
+              isComingSoon
+            />
+          </BentoTilt>
+
+          <BentoTilt className="bento-tilt_1 row-span-1 ms-32 md:col-span-1 md:ms-0">
+            <BentoCard
+              videoSrc={getFeatureVideoSrc(2)}
+              title={
+                <>
+                  bedro<b>o</b>m
+                </>
+              }
+              description="Your Personal Sanctuary, Designed with Perfection – Eleven Interiors."
+              isComingSoon
+            />
+          </BentoTilt>
+
+          <BentoTilt className="bento-tilt_1 me-14 md:col-span-1 md:me-0">
+            <BentoCard
+              videoSrc={getFeatureVideoSrc(3)}
+              title={
+                <>
+                  Mode<b>r</b>n desi<b>g</b>n
+                </>
+              }
+              description="Transform Your Home Into a Modern Masterpiece – Eleven Interiors."
+              isComingSoon
+            />
+          </BentoTilt>
+
+          <BentoTilt className="bento-tilt_2">
+            <div className="flex size-full flex-col justify-between bg-gray-200 p-5">
+              <h1 className="bento-title special-font max-w-64 text-black">
+                Stunning <b>Interior</b> Designs, <b>Coming Soon</b>.
+              </h1>
+              <TiLocationArrow className="m-5 scale-[5] self-end text-violet-400" />
+            </div>
+          </BentoTilt>
+
+          <BentoTilt className="bento-tilt_2">
+            {featureVideos.length > 4 ? (
+              (() => {
+                const videoUrl = videoService.getOptimizedVideoUrl(featureVideos[4], 'hd');
+                return (
+                  <video
+                    src={videoUrl || "videos/feature-5.mp4"}
+                    loop
+                    muted
+                    autoPlay
+                    className="size-full object-cover object-center"
+                  />
+                );
+              })()
+            ) : (
+              <video
+                src="videos/feature-5.mp4"
+                loop
+                muted
+                autoPlay
+                className="size-full object-cover object-center"
+              />
+            )}
+          </BentoTilt>
         </div>
       </div>
-
-      <BentoTilt className="border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
-        <BentoCard
-          src="videos/feature-1.mp4"
-          title={
-            <>
-              luxu<b>r</b>y
-            </>
-          }
-          description="Experience the Art of Luxury – Redefining Interiors with Elegance and Precision. Eleven Interiors – Where Dreams Turn Into Spaces."
-          isComingSoon
-        />
-      </BentoTilt>
-
-      <div className="grid h-[135vh] w-full grid-cols-2 grid-rows-3 gap-7">
-        <BentoTilt className="bento-tilt_1 row-span-1 md:col-span-1 md:row-span-2">
-          <BentoCard
-            src="videos/feature-2.mp4"
-            title={
-              <>
-                bedro<b>o</b>m
-              </>
-            }
-            description="Dream. Relax. Repeat – Crafted Elegance by Eleven Interiors."
-            isComingSoon
-          />
-        </BentoTilt>
-
-        <BentoTilt className="bento-tilt_1 row-span-1 ms-32 md:col-span-1 md:ms-0">
-          <BentoCard
-            src="videos/feature-3.mp4"
-            title={
-              <>
-                bedro<b>o</b>m
-              </>
-            }
-            description="Your Personal Sanctuary, Designed with Perfection – Eleven Interiors."
-            isComingSoon
-          />
-        </BentoTilt>
-
-        <BentoTilt className="bento-tilt_1 me-14 md:col-span-1 md:me-0">
-          <BentoCard
-            src="videos/feature-4.mp4"
-            title={
-              <>
-                Mode<b>r</b>n desi<b>g</b>n
-              </>
-            }
-            description="Transform Your Home Into a Modern Masterpiece – Eleven Interiors."
-            isComingSoon
-          />
-        </BentoTilt>
-
-        <BentoTilt className="bento-tilt_2">
-          <div className="flex size-full flex-col justify-between bg-gray-200 p-5">
-            <h1 className="bento-title special-font max-w-64 text-black">
-              Stunning <b>Interior</b> Designs, <b>Coming Soon</b>.
-            </h1>
-            <TiLocationArrow className="m-5 scale-[5] self-end text-violet-400" />
-          </div>
-        </BentoTilt>
-
-        <BentoTilt className="bento-tilt_2">
-          <video
-            src="videos/feature-5.mp4"
-            loop
-            muted
-            autoPlay
-            className="size-full object-cover object-center"
-          />
-        </BentoTilt>
-      </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default Features;

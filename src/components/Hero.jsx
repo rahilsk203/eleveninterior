@@ -6,13 +6,14 @@ import { useEffect, useRef, useState } from "react"; // React hooks
 
 import Button from "./Button"; // Custom Button component
 import VideoPreview from "./VideoPreview"; // Custom VideoPreview component
+import { videoService } from "../services/videoService"; // Video service for fetching backend videos
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
 const Hero = () => {
   // State to track the current video index
-  const [currentIndex, setCurrentIndex] = useState(1);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // State to track if the user has clicked on the mini video
   const [hasClicked, setHasClicked] = useState(false);
@@ -23,9 +24,34 @@ const Hero = () => {
   // State to track the number of videos loaded
   const [loadedVideos, setLoadedVideos] = useState(0);
 
+  // State to store fetched hero videos
+  const [heroVideos, setHeroVideos] = useState([]);
+
   const totalVideos = 4; // Total number of videos
   const nextVdRef = useRef(null); // Ref for the next video element
   const mainVideoRef = useRef(null); // Ref for the main background video
+
+  // Fetch hero videos from backend on component mount
+  useEffect(() => {
+    const fetchHeroVideos = async () => {
+      try {
+        setLoading(true);
+        const videos = await videoService.getHeroVideos();
+        setHeroVideos(videos);
+        console.log('Fetched hero videos:', videos);
+      } catch (error) {
+        console.error('Failed to fetch hero videos:', error);
+        // Fallback to local videos if backend fetch fails
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHeroVideos();
+    
+    // Prefetch feature videos for anticipated navigation
+    videoService.prefetchVideos(['feature']);
+  }, []);
 
   // Function to handle video load event with optimization
   const handleVideoLoad = () => {
@@ -60,11 +86,16 @@ const Hero = () => {
   // Function to handle mini video click
   const handleMiniVdClick = () => {
     setHasClicked(true); // Set hasClicked to true
-    const newIndex = (currentIndex % totalVideos) + 1;
+    const newIndex = (currentIndex + 1) % (heroVideos.length > 0 ? heroVideos.length : totalVideos);
     setCurrentIndex(newIndex);
     
     // Preload the next video for smoother transition
-    preloadVideo(getVideoSrc((newIndex % totalVideos) + 1));
+    if (heroVideos.length > 0 && newIndex + 1 < heroVideos.length) {
+      const nextVideoUrl = videoService.getOptimizedVideoUrl(heroVideos[newIndex + 1], 'mobile');
+      if (nextVideoUrl) {
+        preloadVideo(nextVideoUrl);
+      }
+    }
   };
 
   // GSAP animation for video transition
@@ -82,7 +113,11 @@ const Hero = () => {
           height: "100%",
           duration: 1.2,
           ease: "power3.out",
-          onStart: () => nextVdRef.current.play(), // Play the video when the animation starts
+          onStart: () => {
+            if (nextVdRef.current) {
+              nextVdRef.current.play(); // Play the video when the animation starts
+            }
+          },
         });
 
         // Animate the current video to disappear
@@ -95,7 +130,7 @@ const Hero = () => {
       }
     },
     {
-      dependencies: [currentIndex], // Re-run animation when currentIndex changes
+      dependencies: [currentIndex, hasClicked, heroVideos], // Re-run animation when currentIndex or heroVideos changes
       revertOnUpdate: true, // Revert animations on component update
     }
   );
@@ -124,7 +159,18 @@ const Hero = () => {
   });
 
   // Function to get the video source based on the index
-  const getVideoSrc = (index) => `videos/hero-${index}.mp4`;
+  const getVideoSrc = (index) => {
+    // Use backend videos if available
+    if (heroVideos.length > 0 && index < heroVideos.length) {
+      // Get optimized URL for mobile (smaller size for better performance)
+      const videoUrl = videoService.getOptimizedVideoUrl(heroVideos[index], 'mobile');
+      if (videoUrl) {
+        return videoUrl;
+      }
+    }
+    // Fallback to local videos
+    return `videos/hero-${index + 1}.mp4`;
+  };
 
   return (
     <div className="relative h-dvh w-screen overflow-x-hidden">
@@ -164,7 +210,7 @@ const Hero = () => {
               >
                 <video
                   ref={nextVdRef}
-                  src={getVideoSrc((currentIndex % totalVideos) + 1)}
+                  src={getVideoSrc((currentIndex + 1) % (heroVideos.length > 0 ? heroVideos.length : totalVideos))}
                   loop
                   muted
                   playsInline
@@ -191,9 +237,7 @@ const Hero = () => {
           {/* Main background video */}
           <video
             ref={mainVideoRef}
-            src={getVideoSrc(
-              currentIndex === totalVideos - 1 ? 1 : currentIndex
-            )}
+            src={getVideoSrc(currentIndex)}
             autoPlay
             loop
             muted

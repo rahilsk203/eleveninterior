@@ -1,17 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FiMapPin, FiPhone, FiMail, FiClock } from "react-icons/fi";
+import { FiMapPin, FiPhone, FiMail, FiClock, FiCheck, FiAlertCircle } from "react-icons/fi";
 import AnimatedTitle from "./AnimatedTitle.jsx";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import Footer from "../components/Footer";
 import NavBar from "../components/Navbar";
+import { contactService } from "../services/contactService";
+import { prefetchService } from "../services/prefetchService";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 // ContactForm Component
-const ContactForm = ({ formRef, handleSubmit, name, setName, number, setNumber, message, setMessage }) => (
+const ContactForm = ({ formRef, handleSubmit, name, setName, email, setEmail, number, setNumber, message, setMessage, isSubmitting, submitStatus }) => (
   <form
     ref={formRef}
     onSubmit={handleSubmit}
@@ -32,6 +34,20 @@ const ContactForm = ({ formRef, handleSubmit, name, setName, number, setNumber, 
         onChange={(e) => setName(e.target.value)}
         className="w-full px-4 py-3 rounded-lg border border-white/30 bg-white/10 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all placeholder-gray-400 text-white hover:bg-white/15"
         required
+      />
+    </div>
+
+    <div className="mb-6">
+      <label htmlFor="email" className="block text-left text-white font-medium mb-2">
+        Your Email (Optional)
+      </label>
+      <input
+        type="email"
+        id="email"
+        placeholder="john@example.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full px-4 py-3 rounded-lg border border-white/30 bg-white/10 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all placeholder-gray-400 text-white hover:bg-white/15"
       />
     </div>
 
@@ -65,11 +81,44 @@ const ContactForm = ({ formRef, handleSubmit, name, setName, number, setNumber, 
       />
     </div>
 
+    {/* Status indicator */}
+    {submitStatus && (
+      <div className={`mb-4 p-4 rounded-lg flex items-center ${
+        submitStatus.type === 'success' 
+          ? 'bg-green-500/20 border border-green-500/50' 
+          : 'bg-red-500/20 border border-red-500/50'
+      }`}>
+        {submitStatus.type === 'success' ? (
+          <FiCheck className="h-5 w-5 text-green-400 mr-2" />
+        ) : (
+          <FiAlertCircle className="h-5 w-5 text-red-400 mr-2" />
+        )}
+        <span className={submitStatus.type === 'success' ? 'text-green-300' : 'text-red-300'}>
+          {submitStatus.message}
+        </span>
+      </div>
+    )}
+
     <button
       type="submit"
-      className="w-full px-6 py-3 bg-gradient-to-r from-violet-600 to-violet-800 text-white rounded-lg hover:from-violet-700 hover:to-violet-900 transition-all font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-transform duration-300"
+      disabled={isSubmitting}
+      className={`w-full px-6 py-3 rounded-lg transition-all font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-transform duration-300 flex items-center justify-center ${
+        isSubmitting 
+          ? 'bg-gray-600 cursor-not-allowed' 
+          : 'bg-gradient-to-r from-violet-600 to-violet-800 hover:from-violet-700 hover:to-violet-900'
+      }`}
     >
-      Send Message
+      {isSubmitting ? (
+        <>
+          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Sending...
+        </>
+      ) : (
+        'Send Message'
+      )}
     </button>
   </form>
 );
@@ -85,7 +134,7 @@ const CompanyInfo = ({ companyInfoRef }) => (
       {/* Address, Phone, Email, Work Hours */}
       <div className="flex items-start group">
         <a
-          href="https://www.google.com/maps?q=96b+Central+avenue+Near+Central+metro+gate+no+6"
+          href="https://www.google.com/maps?q=123+Main+Street,City,Country"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform"
@@ -94,35 +143,35 @@ const CompanyInfo = ({ companyInfoRef }) => (
         </a>
         <div>
           <span className="text-gray-300 font-medium">Address:</span>
-          <span className="text-white block">96b Central avenue<br />Near Central metro gate no 6</span>
+          <span className="text-white block">123 Main Street, City, Country</span>
         </div>
       </div>
 
       <div className="flex items-start group">
-        <a href="tel:+917667974947" className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform">
+        <a href="tel:+1234567890" className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform">
           <FiPhone className="text-violet-400 w-6 h-6 mr-4 flex-shrink-0 cursor-pointer" />
         </a>
         <div>
           <span className="text-gray-300 font-medium">Phone:</span>
-          <span className="text-white block">7667974947</span>
+          <span className="text-white block">+123 456 7890</span>
         </div>
       </div>
 
       <div className="flex items-start group">
-        <a href="mailto:eleveninteriorworld@gmail.com" className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform">
+        <a href="mailto:info@eleveninteriorworld.com" className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform">
           <FiMail className="text-violet-400 w-6 h-6 mr-4 flex-shrink-0 cursor-pointer" />
         </a>
         <div>
           <span className="text-gray-300 font-medium">Email:</span>
-          <span className="text-white block">eleveninteriorworld@gmail.com</span>
+          <span className="text-white block">info@eleveninteriorworld.com</span>
         </div>
       </div>
 
       <div className="flex items-start group">
         <FiClock className="text-violet-400 w-6 h-6 mr-4 flex-shrink-0" />
         <div>
-          <span className="text-gray-300 font-medium">Office Hours:</span>
-          <span className="text-white block">Mon - Sat: 10 AM - 9:30 PM<br />Sunday: Closed</span>
+          <span className="text-gray-300 font-medium">Work Hours:</span>
+          <span className="text-white block">Mon - Fri: 9 AM - 6 PM</span>
         </div>
       </div>
     </div>
@@ -139,14 +188,13 @@ const MapSection = ({ mapRef }) => (
       <h3 className="text-xl font-bold text-white text-center">Find Us Here</h3>
     </div>
     <iframe
-      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3001.0!2d77.2090!3d28.6139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDM2JzUwLjAiTiA3N8KwMTInMzIuNCJF!5e0!3m2!1sen!2sin!4v1690000000000!5m2!1sen!2sin"
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.835434509374!2d144.9537353153166!3d-37.816279742021665!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad642af0f11fd81%3A0xf577d2a2c0b4a1a4!2s123%20Main%20St%2C%20City%20VIC%203000%2C%20Australia!5e0!3m2!1sen!2sus!4v1633039290000!5m2!1sen!2sus"
       width="100%"
       height="400"
       style={{ border: 0 }}
       allowFullScreen=""
       loading="lazy"
       className="w-full"
-      title="96b Central avenue Near Central metro gate no 6"
     ></iframe>
   </div>
 );
@@ -154,8 +202,11 @@ const MapSection = ({ mapRef }) => (
 // Main Contact Component
 function Contact() {
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [number, setNumber] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
 
   const formRef = useRef(null);
   const companyInfoRef = useRef(null);
@@ -169,6 +220,15 @@ function Contact() {
     return () => {
       document.documentElement.style.scrollBehavior = "auto";
     };
+  }, []);
+
+  // Prefetch contact data when component mounts
+  useEffect(() => {
+    // Prefetch contact data for better performance
+    contactService.prefetchContactData();
+    
+    // Record navigation for prefetching
+    prefetchService.recordNavigation('/contact');
   }, []);
 
   // GSAP animations
@@ -206,15 +266,49 @@ function Contact() {
     });
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const subject = `Contact Form Submission from ${name}`;
-    const body = `Name: ${name}%0D%0APhone: ${number}%0D%0AMessage: ${message}`;
-    window.location.href = `mailto:eleveninteriorworld@gmail.com?subject=${subject}&body=${body}`;
+    
+    // Reset status
+    setSubmitStatus(null);
+    setIsSubmitting(true);
+    
+    try {
+      // Prepare contact data
+      const contactData = {
+        name: name,
+        email: email || null, // Optional email
+        phone: number,
+        message: message
+      };
+      
+      // Submit contact message to backend
+      const result = await contactService.submitContactMessage(contactData);
+      
+      // Show success message
+      setSubmitStatus({
+        type: 'success',
+        message: "Thank you for your message! We'll get back to you soon."
+      });
+      
+      // Reset form after successful submission
+      setName("");
+      setEmail("");
+      setNumber("");
+      setMessage("");
+    } catch (error) {
+      console.error("Error submitting contact message:", error);
+      setSubmitStatus({
+        type: 'error',
+        message: `There was an error submitting your message: ${error.message}. Please try again.`
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen w-screen overflow-x-hidden bg-violet-100">
+    <div className="min-h-screen w-screen overflow-x-hidden bg-violet-100 contact-page">
       {/* Navigation */}
       <NavBar />
 
@@ -249,10 +343,14 @@ function Contact() {
           handleSubmit={handleSubmit}
           name={name}
           setName={setName}
+          email={email}
+          setEmail={setEmail}
           number={number}
           setNumber={setNumber}
           message={message}
           setMessage={setMessage}
+          isSubmitting={isSubmitting}
+          submitStatus={submitStatus}
         />
         <CompanyInfo companyInfoRef={companyInfoRef} />
         <MapSection mapRef={mapRef} />
