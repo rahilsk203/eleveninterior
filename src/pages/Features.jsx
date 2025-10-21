@@ -8,6 +8,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { BentoTilt, BentoCard } from "../components/Features";
 import { videoService } from "../services/videoService"; // Import video service for backend integration
+import ScrollToTop from "../components/ScrollToTop"; // Add this import for ScrollToTop component
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
@@ -25,6 +26,16 @@ const Features = () => {
         const videos = await videoService.getFeatureVideos();
         setFeatureVideos(videos);
         console.log('Fetched feature videos from backend:', videos);
+        
+        // Preload videos for better performance
+        if (videos.length > 0) {
+          const videoUrls = videos.map(video => 
+            videoService.getOptimizedVideoUrl(video, 'hd') || `/videos/feature-${video.id}.mp4`
+          ).filter(url => url);
+          
+          // Preload with low priority to avoid blocking initial render
+          videoService.preloadVideos(videoUrls, 'low');
+        }
       } catch (error) {
         console.error('Failed to fetch feature videos from backend:', error);
         // Will use fallback videos
@@ -32,16 +43,22 @@ const Features = () => {
     };
 
     fetchFeatureVideos();
+    
+    // Prefetch other sections for better performance
+    videoService.prefetchVideos(['hero']);
   }, []);
 
   // Function to get video source by index with fallback to local videos
   const getFeatureVideoSrc = (index) => {
-    if (featureVideos.length > index) {
-      // Get optimized URL for HD quality from backend
-      return videoService.getOptimizedVideoUrl(featureVideos[index], 'hd') || `videos/feature-${index + 1}.mp4`;
+    // If we have feature videos from the backend, use them
+    if (featureVideos.length > index && featureVideos[index]) {
+      const optimizedUrl = videoService.getOptimizedVideoUrl(featureVideos[index], 'hd');
+      if (optimizedUrl) {
+        return optimizedUrl;
+      }
     }
     // Fallback to local videos
-    return `videos/feature-${index + 1}.mp4`;
+    return `/videos/feature-${index + 1}.mp4`;
   };
 
   // Features data
@@ -135,19 +152,11 @@ const Features = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-violet-900">
+    <div className="min-h-screen w-screen bg-white">
       <Navbar />
       
-      {/* Back to Top Button */}
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-violet-600 text-white shadow-lg transition-all duration-300 hover:bg-violet-700 hover:scale-110"
-      >
-        <FiArrowUp className="h-5 w-5" />
-      </button>
-
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 py-20">
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 py-20">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="container relative mx-auto px-4 text-center">
           <h1 className="mb-4 text-4xl font-bold text-white md:text-6xl">
@@ -161,21 +170,20 @@ const Features = () => {
       </div>
 
       {/* Features Grid Section */}
-      <section ref={featuresRef} className="py-20 bg-black relative overflow-hidden">
+      <section ref={featuresRef} className="py-20 bg-white relative overflow-hidden">
         {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-900 to-black"></div>
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.1),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-gray-50 to-white"></div>
         
         <div className="container mx-auto px-3 md:px-10 relative z-10">
           <div className="px-5 py-16 text-center">
             <div className="max-w-4xl mx-auto">
-              <p className="font-circular-web text-lg text-violet-400 mb-4 tracking-wider">
+              <p className="font-circular-web text-lg text-violet-600 mb-4 tracking-wider">
                 ELEVEN INTERIOR WORLD
               </p>
-              <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                Our <span className="text-violet-400">Design</span> Philosophy
+              <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+                Our <span className="text-violet-600">Design</span> Philosophy
               </h2>
-              <p className="max-w-2xl mx-auto font-circular-web text-lg text-gray-300 leading-relaxed">
+              <p className="max-w-2xl mx-auto font-circular-web text-lg text-gray-600 leading-relaxed">
                 Transforming spaces with bespoke interior designs that blend style,
                 comfort, and functionality. Let us bring your dream spaces to life!
               </p>
@@ -238,17 +246,19 @@ const Features = () => {
             </BentoTilt>
 
             <BentoTilt className="bento-tilt_2 feature-card">
-              <div className="flex size-full flex-col justify-between bg-gray-200 p-5">
-                <h1 className="bento-title special-font max-w-64 text-black">
+              <div className="flex size-full flex-col justify-between bg-gray-100 p-5">
+                <h1 className="bento-title special-font max-w-64 text-gray-900">
                   Stunning <b>Interior</b> Designs, <b>Coming Soon</b>.
                 </h1>
-                <FiArrowUp className="m-5 scale-[5] self-end text-violet-400" />
+                <FiArrowUp className="m-5 scale-[5] self-end text-gray-900" />
               </div>
             </BentoTilt>
 
             <BentoTilt className="bento-tilt_2 feature-card">
               <video
-                src={featureVideos.length > 4 ? videoService.getOptimizedVideoUrl(featureVideos[4], 'hd') : "videos/feature-5.mp4"} // Use backend video
+                src={featureVideos.length > 4 && featureVideos[4] ? 
+                     videoService.getOptimizedVideoUrl(featureVideos[4], 'hd') || "/videos/feature-5.mp4" : 
+                     "/videos/feature-5.mp4"}
                 loop
                 muted
                 autoPlay
@@ -260,11 +270,11 @@ const Features = () => {
       </section>
 
       {/* Detailed Features Section */}
-      <section className="py-20 bg-gradient-to-br from-violet-50 via-white to-purple-50">
+      <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Why Choose <span className="text-violet-600">Eleven Interior</span>?
+              Why Choose <span className="text-blue-600">Eleven Interior</span>?
             </h2>
             <p className="max-w-2xl mx-auto text-lg text-gray-600">
               We combine creativity, expertise, and attention to detail to deliver exceptional interior design solutions.
@@ -284,7 +294,7 @@ const Features = () => {
                 
                 <div className="space-y-2">
                   {feature.benefits.map((benefit, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-sm text-violet-600">
+                    <div key={idx} className="flex items-center gap-2 text-sm text-blue-600">
                       <FiCheck className="h-4 w-4" />
                       <span>{benefit}</span>
                     </div>
@@ -297,7 +307,7 @@ const Features = () => {
       </section>
 
       {/* Statistics Section */}
-      <section ref={statsRef} className="py-20 bg-gradient-to-r from-violet-600 to-purple-600">
+      <section ref={statsRef} className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
@@ -326,11 +336,11 @@ const Features = () => {
       </section>
 
       {/* Process Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Our <span className="text-violet-600">Process</span>
+              Our <span className="text-blue-600">Process</span>
             </h2>
             <p className="max-w-2xl mx-auto text-lg text-gray-600">
               A systematic approach to delivering exceptional interior design solutions.
@@ -356,7 +366,7 @@ const Features = () => {
               }
             ].map((process, index) => (
               <div key={index} className="text-center">
-                <div className="bg-violet-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-6">
+                <div className="bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-6">
                   {process.step}
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">{process.title}</h3>
@@ -368,7 +378,7 @@ const Features = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600">
+      <section className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Ready to Transform Your Space?
@@ -395,6 +405,7 @@ const Features = () => {
       </section>
 
       <Footer />
+      <ScrollToTop /> {/* Add the shared ScrollToTop component */}
     </div>
   );
 };

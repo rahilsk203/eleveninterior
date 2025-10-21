@@ -5,6 +5,7 @@ import Contact from "./pages/Contact";
 import Inquiry from "./pages/Inquiry";
 import Gallery from "./pages/Gallery";
 import Features from "./pages/Features";
+import About from "./pages/About"; // Added import for About page
 import { prefetchService } from "./services/prefetchService";
 
 // Wrapper component to track location changes
@@ -25,6 +26,7 @@ function App() {
       <LocationTracker>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} /> {/* Added route for About page */}
           <Route path="/contact" element={<Contact />} />
           <Route path="/inquiry" element={<Inquiry />} />
           <Route path="/gallery" element={<Gallery />} />

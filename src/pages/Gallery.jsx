@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/all";
-import { FiArrowLeft, FiArrowUp, FiX, FiChevronLeft, FiChevronRight, FiZoomIn } from "react-icons/fi";
+import { FiArrowLeft, FiX, FiChevronLeft, FiChevronRight, FiZoomIn } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import ScrollToTop from "../components/ScrollToTop"; // Import ScrollToTop component
 import { imageService } from "../services/imageService"; // Import image service for backend integration
 
 // Register GSAP plugins
@@ -277,19 +278,11 @@ const Gallery = () => {
   }, [filteredGallery]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-50">
+    <div className="min-h-screen w-screen bg-white">
       <Navbar />
       
-      {/* Back to Top Button */}
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-violet-600 text-white shadow-lg transition-all duration-300 hover:bg-violet-700 hover:scale-110"
-      >
-        <FiArrowUp className="h-5 w-5" />
-      </button>
-
       {/* Header Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 py-20">
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 py-20">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="container relative mx-auto px-4 text-center">
           <h1 className="mb-4 text-4xl font-bold text-white md:text-6xl">
@@ -311,8 +304,8 @@ const Gallery = () => {
               onClick={() => setSelectedCategory(category.id)}
               className={`rounded-full px-6 py-3 font-medium transition-all duration-300 ${
                 selectedCategory === category.id
-                  ? "bg-violet-600 text-white shadow-lg"
-                  : "bg-white text-violet-600 shadow-md hover:bg-violet-50"
+                  ? "bg-blue-600 text-white shadow-lg"
+                  : "bg-white text-blue-600 shadow-md hover:bg-blue-50"
               }`}
             >
               {category.name} ({category.count})
@@ -402,6 +395,7 @@ const Gallery = () => {
       )}
 
       <Footer />
+      <ScrollToTop /> {/* Use the shared ScrollToTop component */}
     </div>
   );
 };

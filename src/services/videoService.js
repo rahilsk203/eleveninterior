@@ -30,6 +30,14 @@ class VideoService {
     
     // Fallback to local videos if API fails
     this.useLocalVideos = false;
+    
+    // Endpoint priority order for faster lookup
+    this.endpointPriority = [
+      `${this.API_BASE}/api/videos/{section}`,
+      `${this.API_BASE}/api/{section}/videos`,
+      `${this.API_BASE}/{section}/videos`,
+      `${this.API_BASE}/videos/{section}`
+    ];
   }
 
   // Detect browser capabilities for video format support
@@ -75,14 +83,16 @@ class VideoService {
     return capabilities;
   }
 
-  // LRU Cache management with eviction policy
+  // Optimized LRU Cache management with eviction policy
   setCache(key, data) {
-    // Evict oldest entry if cache is at max size
+    // If cache is at max size, evict the least recently used entry
     if (this.cache.size >= this.maxCacheSize) {
+      // Get the first (least recently used) entry
       const firstKey = this.cache.keys().next().value;
       this.cache.delete(firstKey);
     }
     
+    // Add new entry to cache
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
@@ -92,16 +102,21 @@ class VideoService {
 
   getCache(key) {
     const cached = this.cache.get(key);
-    if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
-      // Update last accessed time for LRU
-      cached.lastAccessed = Date.now();
-      return cached.data;
+    if (cached) {
+      // Check if cache entry is still valid
+      if (Date.now() - cached.timestamp < this.cacheTimeout) {
+        // Update last accessed time for LRU
+        cached.lastAccessed = Date.now();
+        return cached.data;
+      } else {
+        // Remove expired entry
+        this.cache.delete(key);
+      }
     }
-    this.cache.delete(key);
     return null;
   }
 
-  // Move entry to end of cache (LRU implementation)
+  // Optimized LRU implementation - move to end (most recently used)
   updateLRU(key) {
     if (this.cache.has(key)) {
       const value = this.cache.get(key);
@@ -142,37 +157,62 @@ class VideoService {
     }
   }
 
-  // Prefetch videos for anticipated requests
+  // Optimized prefetch with parallel processing
   async prefetchVideos(sections = ['hero', 'feature']) {
     // Add sections to prefetch queue
     sections.forEach(section => this.prefetchQueue.add(section));
     
-    // Process prefetch queue in background
-    this.processPrefetchQueue();
+    // Process prefetch queue with better concurrency control
+    return this.processPrefetchQueue();
   }
 
   async processPrefetchQueue() {
-    // Process one item at a time to avoid overwhelming the API
-    for (const section of this.prefetchQueue) {
-      try {
-        // Skip if already cached
-        const cacheKey = `videos_${section}`;
-        if (this.getCache(cacheKey)) {
+    // Convert Set to Array for better processing
+    const sections = Array.from(this.prefetchQueue);
+    
+    // Process in parallel with limited concurrency (max 3 at a time)
+    const concurrencyLimit = 3;
+    const results = [];
+    
+    for (let i = 0; i < sections.length; i += concurrencyLimit) {
+      const batch = sections.slice(i, i + concurrencyLimit);
+      const batchPromises = batch.map(async (section) => {
+        try {
+          // Skip if already cached
+          const cacheKey = `videos_${section}`;
+          if (this.getCache(cacheKey)) {
+            this.prefetchQueue.delete(section);
+            return { section, success: true, cached: true };
+          }
+          
+          // Fetch and cache the videos
+          await this.getVideosBySection(section);
           this.prefetchQueue.delete(section);
-          continue;
+          return { section, success: true, cached: false };
+        } catch (error) {
+          console.warn(`Prefetch failed for section: ${section}`, error);
+          this.prefetchQueue.delete(section);
+          return { section, success: false, error };
         }
-        
-        // Fetch and cache the videos
-        await this.getVideosBySection(section);
-        this.prefetchQueue.delete(section);
-      } catch (error) {
-        console.warn(`Prefetch failed for section: ${section}`, error);
-        this.prefetchQueue.delete(section);
-      }
+      });
       
-      // Small delay between prefetch requests
-      await new Promise(resolve => setTimeout(resolve, 100));
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
+      
+      // Small delay between batches to avoid overwhelming the API
+      if (i + concurrencyLimit < sections.length) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
     }
+    
+    return results;
+  }
+
+  // Optimized endpoint selection with priority
+  getEndpointUrls(section) {
+    return this.endpointPriority.map(endpoint => 
+      endpoint.replace('{section}', section)
+    );
   }
 
   // Fetch videos from a specific section with optimization
@@ -198,13 +238,8 @@ class VideoService {
 
       // Fetch with retry mechanism
       const result = await this.retry(async () => {
-        // Try different possible endpoints
-        const endpoints = [
-          `${this.API_BASE}/api/videos/${section}`,
-          `${this.API_BASE}/api/${section}/videos`,
-          `${this.API_BASE}/${section}/videos`,
-          `${this.API_BASE}/videos/${section}`
-        ];
+        // Use optimized endpoint selection
+        const endpoints = this.getEndpointUrls(section);
         
         let lastError;
         for (const endpoint of endpoints) {
@@ -274,17 +309,20 @@ class VideoService {
     // Return local video paths based on section
     if (section === 'hero') {
       return [
-        { id: 1, urls: { original: 'videos/hero-1.mp4', mobile: 'videos/hero-1.mp4' } },
-        { id: 2, urls: { original: 'videos/hero-2.mp4', mobile: 'videos/hero-2.mp4' } },
-        { id: 3, urls: { original: 'videos/hero-3.mp4', mobile: 'videos/hero-3.mp4' } },
-        { id: 4, urls: { original: 'videos/hero-4.mp4', mobile: 'videos/hero-4.mp4' } }
+        { id: 1, urls: { original: '/videos/hero-1.mp4', mobile: '/videos/hero-1.mp4' } },
+        { id: 2, urls: { original: '/videos/hero-2.mp4', mobile: '/videos/hero-2.mp4' } },
+        { id: 3, urls: { original: '/videos/hero-3.mp4', mobile: '/videos/hero-3.mp4' } },
+        { id: 4, urls: { original: '/videos/hero-4.mp4', mobile: '/videos/hero-4.mp4' } }
       ];
     }
     
     if (section === 'feature') {
       return [
-        { id: 1, urls: { original: 'videos/feature-1.mp4', mobile: 'videos/feature-1.mp4' } },
-        { id: 2, urls: { original: 'videos/feature-2.mp4', mobile: 'videos/feature-2.mp4' } }
+        { id: 1, urls: { original: '/videos/feature-1.mp4', mobile: '/videos/feature-1.mp4' } },
+        { id: 2, urls: { original: '/videos/feature-2.mp4', mobile: '/videos/feature-2.mp4' } },
+        { id: 3, urls: { original: '/videos/feature-3.mp4', mobile: '/videos/feature-3.mp4' } },
+        { id: 4, urls: { original: '/videos/feature-4.mp4', mobile: '/videos/feature-4.mp4' } },
+        { id: 5, urls: { original: '/videos/feature-5.mp4', mobile: '/videos/feature-5.mp4' } }
       ];
     }
     
@@ -411,11 +449,14 @@ class VideoService {
       return Promise.resolve();
     }
     
-    // For high priority, preload all at once
+    // For high priority, preload all at once (max 4 concurrent)
     if (priority === 'high') {
-      return Promise.all(
-        videoUrls.map(url => this.preloadVideo(url, 'high'))
-      );
+      const concurrencyLimit = 4;
+      for (let i = 0; i < videoUrls.length; i += concurrencyLimit) {
+        const batch = videoUrls.slice(i, i + concurrencyLimit);
+        await Promise.all(batch.map(url => this.preloadVideo(url, 'high')));
+      }
+      return;
     }
     
     // For low priority, preload sequentially to avoid bandwidth contention

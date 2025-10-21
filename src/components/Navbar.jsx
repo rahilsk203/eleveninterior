@@ -78,6 +78,8 @@ const NavBar = () => {
     // Handle page navigation
     if (item === "Home") {
       navigate("/");
+    } else if (item === "About") {
+      navigate("/about");
     } else if (item === "Contact") {
       navigate("/contact");
     } else if (item === "Inquiry") {
@@ -87,7 +89,7 @@ const NavBar = () => {
     } else if (item === "Features") {
       navigate("/features");
     }
-    // For other items (About, Story, etc.), they will use scroll navigation
+    // For other items (Story, Testimonials, etc.), they will use scroll navigation
   };
 
   useEffect(() => {
@@ -192,7 +194,7 @@ const NavBar = () => {
             <div className="hidden md:block">
               {navItems.map((item, index) => {
                 // Handle page navigation for specific items
-                if (item === "Home" || item === "Contact" || item === "Inquiry" || item === "Gallery" || item === "Features") {
+                if (item === "Home" || item === "About" || item === "Contact" || item === "Inquiry" || item === "Gallery" || item === "Features") {
                   return (
                     <button
                       key={index}
@@ -272,7 +274,7 @@ const NavBar = () => {
             <div className="space-y-4">
               {navItems.map((item, index) => {
                 // Handle page navigation for specific items
-                if (item === "Home" || item === "Contact" || item === "Inquiry" || item === "Gallery" || item === "Features") {
+                if (item === "Home" || item === "About" || item === "Contact" || item === "Inquiry" || item === "Gallery" || item === "Features") {
                   return (
                     <button
                       key={index}
