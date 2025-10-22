@@ -14,6 +14,9 @@ class ImageService {
     this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
     this.maxCacheSize = 50; // Maximum cache entries
     
+    // Request deduplication to prevent multiple simultaneous requests for same resource
+    this.pendingRequests = new Map();
+    
     // Rate limiting - track last request time
     this.lastRequestTime = new Map();
     this.minRequestInterval = 1000; // 1 second minimum between requests
@@ -63,6 +66,25 @@ class ImageService {
 
   clearCache() {
     this.cache.clear();
+  }
+
+  // Request deduplication to prevent multiple simultaneous requests for same resource
+  async dedupeRequest(key, requestFn) {
+    // If request is already pending, return the existing promise
+    if (this.pendingRequests.has(key)) {
+      return this.pendingRequests.get(key);
+    }
+    
+    // Create new request promise
+    const promise = requestFn().finally(() => {
+      // Remove from pending requests when completed
+      this.pendingRequests.delete(key);
+    });
+    
+    // Store the pending request
+    this.pendingRequests.set(key, promise);
+    
+    return promise;
   }
 
   // Rate limiting helper with exponential backoff
@@ -128,62 +150,65 @@ class ImageService {
 
   // Fetch images from a specific section with optimization
   async getImagesBySection(section) {
-    try {
-      // Check cache first with LRU update
-      const cacheKey = `images_${section}`;
-      const cachedData = this.getCache(cacheKey);
-      if (cachedData) {
-        console.log(`Returning cached images for section: ${section}`);
-        this.updateLRU(cacheKey);
-        return cachedData;
-      }
-
-      // Apply rate limiting
-      await this.rateLimit(section);
-
-      // Fetch with retry mechanism
-      const result = await this.retry(async () => {
-        const response = await fetch(`${this.API_BASE}/api/images/${section}`);
-        
-        if (!response.ok) {
-          if (response.status === 429) {
-            console.warn(`Rate limited for section: ${section}. Using fallback.`);
-            // Return empty array as fallback to prevent app crash
-            return [];
-          }
-          throw new Error(`Failed to fetch ${section} images: ${response.status} ${response.statusText}`);
+    // Use request deduplication to prevent multiple simultaneous requests
+    const requestKey = `images_${section}`;
+    return this.dedupeRequest(requestKey, async () => {
+      try {
+        // Check cache first with LRU update
+        const cacheKey = `images_${section}`;
+        const cachedData = this.getCache(cacheKey);
+        if (cachedData) {
+          console.log(`Returning cached images for section: ${section}`);
+          return cachedData;
         }
 
-        return await response.json();
-      });
+        // Apply rate limiting
+        await this.rateLimit(section);
 
-      if (!result.success) {
-        throw new Error(result.error?.message || `Failed to fetch ${section} images`);
+        // Fetch with retry mechanism
+        const result = await this.retry(async () => {
+          const response = await fetch(`${this.API_BASE}/api/images/${section}`);
+          
+          if (!response.ok) {
+            if (response.status === 429) {
+              console.warn(`Rate limited for section: ${section}. Using fallback.`);
+              // Return empty array as fallback to prevent app crash
+              return [];
+            }
+            throw new Error(`Failed to fetch ${section} images: ${response.status} ${response.statusText}`);
+          }
+
+          return await response.json();
+        });
+
+        if (!result.success) {
+          throw new Error(result.error?.message || `Failed to fetch ${section} images`);
+        }
+
+        // Extract image data
+        let images = [];
+        if (result.data.images && Array.isArray(result.data.images)) {
+          // Multiple images response
+          images = result.data.images;
+        } else if (result.data.id) {
+          // Single image response
+          images = [result.data];
+        } else if (Array.isArray(result.data)) {
+          // Array of images response
+          images = result.data;
+        }
+
+        // Cache the result
+        this.setCache(cacheKey, images);
+        
+        console.log(`Fetched ${images.length} images for section: ${section}`);
+        return images;
+      } catch (error) {
+        console.error(`Error fetching ${section} images:`, error);
+        // Return empty array as fallback to prevent app crash
+        return [];
       }
-
-      // Extract image data
-      let images = [];
-      if (result.data.images && Array.isArray(result.data.images)) {
-        // Multiple images response
-        images = result.data.images;
-      } else if (result.data.id) {
-        // Single image response
-        images = [result.data];
-      } else if (Array.isArray(result.data)) {
-        // Array of images response
-        images = result.data;
-      }
-
-      // Cache the result
-      this.setCache(cacheKey, images);
-      
-      console.log(`Fetched ${images.length} images for section: ${section}`);
-      return images;
-    } catch (error) {
-      console.error(`Error fetching ${section} images:`, error);
-      // Return empty array as fallback to prevent app crash
-      return [];
-    }
+    });
   }
 
   // Get entrance images (used in Story component)

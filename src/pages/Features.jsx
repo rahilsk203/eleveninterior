@@ -709,7 +709,6 @@ const Features = () => {
                 <div className="flex items-center justify-center p-2 sm:p-4 md:p-8 bg-gradient-to-r from-blue-900/20 via-purple-900/20 to-indigo-900/20">
                   {videoLoading && (
                     <div className="absolute inset-0 flex items-center justify-center z-10">
-                      <div className="h-12 w-12 rounded-full border-4 border-white border-t-transparent animate-spin"></div>
                     </div>
                   )}
                   <video

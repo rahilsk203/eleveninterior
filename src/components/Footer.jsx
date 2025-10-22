@@ -49,9 +49,9 @@ const Footer = () => {
 
   const quickLinks = [
     { name: "Home", path: "/" },
-    { name: "About", path: "/#about" },
-    { name: "Services", path: "/#features" },
-    { name: "Gallery", path: "/#gallery" },
+    { name: "About", path: "/about" },
+    { name: "Services", path: "/features" },
+    { name: "Gallery", path: "/gallery" },
     { name: "Contact", path: "/contact" },
     { name: "Inquiry", path: "/inquiry" },
   ];
@@ -169,15 +169,15 @@ const Footer = () => {
               © {currentYear} ELEVEN INTERIOR. All rights reserved. | Powered by sksohel
             </p>
             <div className="flex space-x-6">
-              <a href="#privacy-policy" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
+              <Link to="/privacy-policy" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
                 Privacy Policy
-              </a>
-              <a href="#terms-of-service" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
+              </Link>
+              <Link to="/terms-of-service" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
                 Terms of Service
-              </a>
-              <a href="#cookie-policy" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
+              </Link>
+              <Link to="/cookie-policy" className="text-gray-300 hover:text-violet-400 transition-colors text-sm">
                 Cookie Policy
-              </a>
+              </Link>
             </div>
           </div>
         </div>

@@ -140,7 +140,13 @@ const InquiryForm = ({ formRef, handleSubmit, formData, setFormData, isSubmittin
             className="px-3 py-2 bg-violet-600 hover:bg-violet-700 disabled:bg-gray-600 text-white rounded-lg transition-all duration-300 flex items-center gap-1 min-w-fit"
           >
             {isGettingLocation ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <>
+                <div className="three-body">
+                  <div className="three-body__dot"></div>
+                  <div className="three-body__dot"></div>
+                  <div className="three-body__dot"></div>
+                </div>
+              </>
             ) : (
               <FiNavigation className="w-4 h-4" />
             )}
@@ -180,7 +186,11 @@ const InquiryForm = ({ formRef, handleSubmit, formData, setFormData, isSubmittin
       >
         {isSubmitting ? (
           <>
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div className="three-body">
+              <div className="three-body__dot"></div>
+              <div className="three-body__dot"></div>
+              <div className="three-body__dot"></div>
+            </div>
             Submitting...
           </>
         ) : (

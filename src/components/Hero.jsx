@@ -124,6 +124,7 @@ const Hero = () => {
         setLoading(true);
         performanceRef.current.fetchStart = performance.now();
         
+        // Use deduplicated request for hero videos
         const videos = await videoService.getHeroVideos();
         setHeroVideos(videos);
         

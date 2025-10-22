@@ -14,6 +14,9 @@ class ContactService {
     this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
     this.maxCacheSize = 50; // Maximum cache entries
     
+    // Request deduplication to prevent multiple simultaneous requests for same resource
+    this.pendingRequests = new Map();
+    
     // Rate limiting - track last request time
     this.lastRequestTime = new Map();
     this.minRequestInterval = 1000; // 1 second minimum between requests
@@ -71,6 +74,25 @@ class ContactService {
 
   clearCache() {
     this.cache.clear();
+  }
+
+  // Request deduplication to prevent multiple simultaneous requests for same resource
+  async dedupeRequest(key, requestFn) {
+    // If request is already pending, return the existing promise
+    if (this.pendingRequests.has(key)) {
+      return this.pendingRequests.get(key);
+    }
+    
+    // Create new request promise
+    const promise = requestFn().finally(() => {
+      // Remove from pending requests when completed
+      this.pendingRequests.delete(key);
+    });
+    
+    // Store the pending request
+    this.pendingRequests.set(key, promise);
+    
+    return promise;
   }
 
   // Rate limiting helper with exponential backoff
@@ -203,71 +225,75 @@ class ContactService {
 
   // Submit a new contact message with full optimization
   async submitContactMessage(contactData) {
-    try {
-      // Validate required fields with caching
-      const validations = [
-        { field: 'name', value: contactData.name, minLen: 2 },
-        { field: 'phone', value: contactData.phone, minLen: 10 },
-        { field: 'message', value: contactData.message, minLen: 5 }
-      ];
+    // Use request deduplication to prevent multiple simultaneous submissions
+    const requestKey = `contact_${contactData.name}_${contactData.phone}`;
+    return this.dedupeRequest(requestKey, async () => {
+      try {
+        // Validate required fields with caching
+        const validations = [
+          { field: 'name', value: contactData.name, minLen: 2 },
+          { field: 'phone', value: contactData.phone, minLen: 10 },
+          { field: 'message', value: contactData.message, minLen: 5 }
+        ];
 
-      // Only validate email if provided
-      if (contactData.email) {
-        validations.push({ field: 'email', value: contactData.email, validator: this.isValidEmail.bind(this) });
-      }
-
-      for (const { field, value, minLen, validator } of validations) {
-        if (!value) {
-          throw new Error(`${field.replace('_', ' ')} is required`);
+        // Only validate email if provided
+        if (contactData.email) {
+          validations.push({ field: 'email', value: contactData.email, validator: this.isValidEmail.bind(this) });
         }
-        
-        if (minLen && value.length < minLen) {
-          throw new Error(`${field.replace('_', ' ')} must be at least ${minLen} characters`);
-        }
-        
-        if (validator && !validator(value)) {
-          throw new Error(`Valid ${field.replace('_', ' ')} is required`);
-        }
-      }
 
-      // Apply rate limiting
-      await this.rateLimit('contact_submit');
+        for (const { field, value, minLen, validator } of validations) {
+          if (!value) {
+            throw new Error(`${field.replace('_', ' ')} is required`);
+          }
+          
+          if (minLen && value.length < minLen) {
+            throw new Error(`${field.replace('_', ' ')} must be at least ${minLen} characters`);
+          }
+          
+          if (validator && !validator(value)) {
+            throw new Error(`Valid ${field.replace('_', ' ')} is required`);
+          }
+        }
 
-      // Submit with retry mechanism
-      const result = await this.retry(async () => {
-        const response = await fetch(`${this.API_BASE}/api/contact`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: contactData.name.toLowerCase().trim(),
-            email: contactData.email ? contactData.email.toLowerCase().trim() : null,
-            phone: contactData.phone.trim(),
-            message: contactData.message.trim(),
-            source: 'contact_form'
-          })
+        // Apply rate limiting
+        await this.rateLimit('contact_submit');
+
+        // Submit with retry mechanism
+        const result = await this.retry(async () => {
+          const response = await fetch(`${this.API_BASE}/api/contact`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: contactData.name.toLowerCase().trim(),
+              email: contactData.email ? contactData.email.toLowerCase().trim() : null,
+              phone: contactData.phone.trim(),
+              message: contactData.message.trim(),
+              source: 'contact_form'
+            })
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            const errorMessage = errorData.error?.message || errorData.message || `Failed to submit contact message: ${response.status} ${response.statusText}`;
+            throw new Error(errorMessage);
+          }
+
+          return await response.json();
         });
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          const errorMessage = errorData.error?.message || errorData.message || `Failed to submit contact message: ${response.status} ${response.statusText}`;
-          throw new Error(errorMessage);
+        if (!result.success) {
+          throw new Error(result.error?.message || 'Failed to submit contact message');
         }
 
-        return await response.json();
-      });
-
-      if (!result.success) {
-        throw new Error(result.error?.message || 'Failed to submit contact message');
+        console.log('Contact message submitted successfully:', result.data);
+        return result.data;
+      } catch (error) {
+        console.error('Error submitting contact message:', error);
+        throw error;
       }
-
-      console.log('Contact message submitted successfully:', result.data);
-      return result.data;
-    } catch (error) {
-      console.error('Error submitting contact message:', error);
-      throw error;
-    }
+    });
   }
 
   // Batch submission for multiple contact messages

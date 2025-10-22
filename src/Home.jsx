@@ -54,7 +54,7 @@ function Main() {
       />
       <main className="relative min-h-screen w-screen overflow-x-hidden">
         {/* Main Content */}
-        <div className="animate-fadeIn">
+        <div className="">
           <NavBar />
           
           {/* Hero Section */}
@@ -79,7 +79,7 @@ function Main() {
           
           {/* Gallery Section */}
           <section id="gallery" className="relative">
-            <Suspense fallback={<div className="h-96 flex items-center justify-center"><div className="three-body"><div className="three-body__dot"></div><div className="three-body__dot"></div><div className="three-body__dot"></div></div></div>}>
+            <Suspense fallback={null}>
               <LazyGallery />
             </Suspense>
           </section>

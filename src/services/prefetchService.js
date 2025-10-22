@@ -112,7 +112,7 @@ class PrefetchService {
           break;
           
         case '/features':
-          // Prefetch feature videos
+          // Prefetch feature videos with batch optimization
           videoService.prefetchVideos(['feature', 'hero']);
           imageService.prefetchImages(['gallery', 'about']);
           break;

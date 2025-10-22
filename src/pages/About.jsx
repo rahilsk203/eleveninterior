@@ -57,7 +57,7 @@ const AboutPage = () => {
       />
       <div className="min-h-screen w-screen bg-white">
         <NavBar />
-        <div className="pt-16 md:pt-20"> {/* Responsive padding to account for fixed navbar */}
+        <div className="pt-20"> {/* Standardized padding to account for fixed navbar */}
           <AboutComponent />
         </div>
         

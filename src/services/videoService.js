@@ -14,6 +14,9 @@ class VideoService {
     this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
     this.maxCacheSize = 50; // Maximum cache entries
     
+    // Request deduplication to prevent multiple simultaneous requests for same resource
+    this.pendingRequests = new Map();
+    
     // Rate limiting - track last request time
     this.lastRequestTime = new Map();
     this.minRequestInterval = 1000; // 1 second minimum between requests
@@ -129,6 +132,25 @@ class VideoService {
     this.cache.clear();
   }
 
+  // Request deduplication to prevent multiple simultaneous requests for same resource
+  async dedupeRequest(key, requestFn) {
+    // If request is already pending, return the existing promise
+    if (this.pendingRequests.has(key)) {
+      return this.pendingRequests.get(key);
+    }
+    
+    // Create new request promise
+    const promise = requestFn().finally(() => {
+      // Remove from pending requests when completed
+      this.pendingRequests.delete(key);
+    });
+    
+    // Store the pending request
+    this.pendingRequests.set(key, promise);
+    
+    return promise;
+  }
+
   // Rate limiting helper with exponential backoff
   async rateLimit(section) {
     const now = Date.now();
@@ -217,91 +239,94 @@ class VideoService {
 
   // Fetch videos from a specific section with optimization
   async getVideosBySection(section) {
-    // If API is not working, use local videos
-    if (this.useLocalVideos) {
-      console.log('Using local videos fallback for section:', section);
-      return this.getLocalVideos(section);
-    }
-    
-    try {
-      // Check cache first with LRU update
-      const cacheKey = `videos_${section}`;
-      const cachedData = this.getCache(cacheKey);
-      if (cachedData) {
-        console.log(`Returning cached videos for section: ${section}`);
-        this.updateLRU(cacheKey);
-        return cachedData;
-      }
-
-      // Apply rate limiting
-      await this.rateLimit(section);
-
-      // Fetch with retry mechanism
-      const result = await this.retry(async () => {
-        // Use optimized endpoint selection
-        const endpoints = this.getEndpointUrls(section);
-        
-        let lastError;
-        for (const endpoint of endpoints) {
-          try {
-            console.log(`Trying endpoint: ${endpoint}`);
-            const response = await fetch(endpoint);
-            
-            if (response.ok) {
-              return await response.json();
-            }
-            
-            if (response.status === 429) {
-              console.warn(`Rate limited for section: ${section}. Using fallback.`);
-              // Return empty array as fallback to prevent app crash
-              return [];
-            }
-            
-            lastError = new Error(`Failed to fetch ${section} videos: ${response.status} ${response.statusText}`);
-          } catch (e) {
-            lastError = e;
-            continue;
-          }
-        }
-        
-        throw lastError;
-      });
-
-      if (!result.success) {
-        throw new Error(result.error?.message || `Failed to fetch ${section} videos`);
-      }
-
-      // Extract video data
-      let videos = [];
-      if (result.data.videos && Array.isArray(result.data.videos)) {
-        // Multiple videos response
-        videos = result.data.videos;
-      } else if (result.data.id) {
-        // Single video response
-        videos = [result.data];
-      } else if (Array.isArray(result.data)) {
-        // Array of videos response
-        videos = result.data;
-      }
-
-      // Cache the result
-      this.setCache(cacheKey, videos);
-      
-      console.log(`Fetched ${videos.length} videos for section: ${section}`);
-      return videos;
-    } catch (error) {
-      console.error(`Error fetching ${section} videos:`, error);
-      
-      // If API fails, switch to local videos and try again
-      if (!this.useLocalVideos) {
-        console.warn('Switching to local videos fallback');
-        this.useLocalVideos = true;
+    // Use request deduplication to prevent multiple simultaneous requests
+    const requestKey = `videos_${section}`;
+    return this.dedupeRequest(requestKey, async () => {
+      // If API is not working, use local videos
+      if (this.useLocalVideos) {
+        console.log('Using local videos fallback for section:', section);
         return this.getLocalVideos(section);
       }
       
-      // Return empty array as fallback to prevent app crash
-      return [];
-    }
+      try {
+        // Check cache first with LRU update
+        const cacheKey = `videos_${section}`;
+        const cachedData = this.getCache(cacheKey);
+        if (cachedData) {
+          console.log(`Returning cached videos for section: ${section}`);
+          return cachedData;
+        }
+
+        // Apply rate limiting
+        await this.rateLimit(section);
+
+        // Fetch with retry mechanism
+        const result = await this.retry(async () => {
+          // Use optimized endpoint selection
+          const endpoints = this.getEndpointUrls(section);
+          
+          let lastError;
+          for (const endpoint of endpoints) {
+            try {
+              console.log(`Trying endpoint: ${endpoint}`);
+              const response = await fetch(endpoint);
+              
+              if (response.ok) {
+                return await response.json();
+              }
+              
+              if (response.status === 429) {
+                console.warn(`Rate limited for section: ${section}. Using fallback.`);
+                // Return empty array as fallback to prevent app crash
+                return [];
+              }
+              
+              lastError = new Error(`Failed to fetch ${section} videos: ${response.status} ${response.statusText}`);
+            } catch (e) {
+              lastError = e;
+              continue;
+            }
+          }
+          
+          throw lastError;
+        });
+
+        if (!result.success) {
+          throw new Error(result.error?.message || `Failed to fetch ${section} videos`);
+        }
+
+        // Extract video data
+        let videos = [];
+        if (result.data.videos && Array.isArray(result.data.videos)) {
+          // Multiple videos response
+          videos = result.data.videos;
+        } else if (result.data.id) {
+          // Single video response
+          videos = [result.data];
+        } else if (Array.isArray(result.data)) {
+          // Array of videos response
+          videos = result.data;
+        }
+
+        // Cache the result
+        this.setCache(cacheKey, videos);
+        
+        console.log(`Fetched ${videos.length} videos for section: ${section}`);
+        return videos;
+      } catch (error) {
+        console.error(`Error fetching ${section} videos:`, error);
+        
+        // If API fails, switch to local videos and try again
+        if (!this.useLocalVideos) {
+          console.warn('Switching to local videos fallback');
+          this.useLocalVideos = true;
+          return this.getLocalVideos(section);
+        }
+        
+        // Return empty array as fallback to prevent app crash
+        return [];
+      }
+    });
   }
   
   // Get local videos as fallback

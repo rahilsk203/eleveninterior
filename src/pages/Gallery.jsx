@@ -85,11 +85,15 @@ const Gallery = () => {
     const fetchGalleryImages = async () => {
       try {
         setLoading(true);
+        // Use deduplicated request for gallery images
         const images = await imageService.getGalleryImages();
         
         if (isMounted) {
           setGalleryImages(images);
           console.log('Fetched gallery images from backend:', images);
+          
+          // Prefetch other image sections for anticipated navigation
+          imageService.prefetchImages(['contact', 'about']);
         }
       } catch (error) {
         console.error('Failed to fetch gallery images from backend:', error);
