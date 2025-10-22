@@ -60,7 +60,9 @@ export const BentoCard = ({ videoSrc, title, description, isComingSoon }) => {
 
   const handleMouseEnter = () => {
     setHoverOpacity(1);
-    if (videoRef.current) videoRef.current.play(); // Start video on hover
+    if (videoRef.current) {
+      videoRef.current.play().catch(e => console.warn("Video play failed:", e)); // Start video on hover
+    }
   };
 
   const handleMouseMove = (event) => {
@@ -79,7 +81,9 @@ export const BentoCard = ({ videoSrc, title, description, isComingSoon }) => {
   };
 
   const handleTouchStart = (event) => {
-    if (videoRef.current) videoRef.current.play(); // Start video on touch
+    if (videoRef.current) {
+      videoRef.current.play().catch(e => console.warn("Video play failed:", e)); // Start video on touch
+    }
     if (hoverButtonRef.current && event.touches.length) {
       const rect = hoverButtonRef.current.getBoundingClientRect();
       const touch = event.touches[0];
@@ -123,6 +127,7 @@ export const BentoCard = ({ videoSrc, title, description, isComingSoon }) => {
           src={videoSrc}
           loop
           muted
+          playsInline
           className="absolute left-0 top-0 size-full object-cover object-center"
         />
       ) : (
@@ -197,7 +202,7 @@ const Features = () => {
       }
     }
     // Fallback to local videos
-    return `videos/feature-${index + 1}.mp4`;
+    return `/videos/feature-${index + 1}.mp4`;
   };
 
   return (
@@ -294,6 +299,7 @@ const Features = () => {
                     loop
                     muted
                     autoPlay
+                    playsInline
                     className="size-full object-cover object-center"
                   />
                 );
@@ -304,6 +310,7 @@ const Features = () => {
                 loop
                 muted
                 autoPlay
+                playsInline
                 className="size-full object-cover object-center"
               />
             )}

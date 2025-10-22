@@ -8,6 +8,7 @@ import Footer from "../components/Footer";
 import NavBar from "../components/Navbar";
 import { contactService } from "../services/contactService";
 import { prefetchService } from "../services/prefetchService";
+import SEO from "../components/SEO"; // Import SEO component
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -250,19 +251,21 @@ function Contact() {
 
     // Animate form, company info, and map
     [formRef.current, companyInfoRef.current, mapRef.current].forEach((ref) => {
-      gsap.from(ref, {
-        opacity: 0,
-        y: 50,
-        duration: 1,
-        scrollTrigger: {
-          trigger: ref,
-          start: "top 80%",
-          end: "bottom 20%",
-          toggleActions: "play none none reverse",
-          markers: false,
-        },
-        willChange: "transform, opacity",
-      });
+      if (ref) {
+        gsap.from(ref, {
+          opacity: 0,
+          y: 50,
+          duration: 1,
+          scrollTrigger: {
+            trigger: ref,
+            start: "top 80%",
+            end: "bottom 20%",
+            toggleActions: "play none none reverse",
+            markers: false,
+          },
+          willChange: "transform, opacity",
+        });
+      }
     });
   }, []);
 
@@ -307,58 +310,115 @@ function Contact() {
     }
   };
 
+  // Structured data for contact page
+  const contactStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact Eleven Interior World",
+    "description": "Get in touch with Eleven Interior World for premium interior design services for residential and commercial spaces",
+    "url": typeof window !== 'undefined' ? window.location.href : '',
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": typeof window !== 'undefined' ? window.location.origin : ''
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Contact",
+          "item": typeof window !== 'undefined' ? window.location.href : ''
+        }
+      ]
+    },
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "Eleven Interior World",
+      "url": typeof window !== 'undefined' ? window.location.origin : '',
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+123 456 7890",
+        "contactType": "customer service",
+        "email": "info@eleveninteriorworld.com",
+        "availableLanguage": "en"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "123 Main Street",
+        "addressLocality": "City",
+        "addressCountry": "Country"
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen w-screen overflow-x-hidden bg-violet-100 contact-page">
-      {/* Navigation */}
-      <NavBar />
+    <>
+      <SEO
+        title="Contact Eleven Interior World - Premium Interior Design Services"
+        description="Get in touch with Eleven Interior World for premium interior design services for residential and commercial spaces. We're here to help transform your vision into reality."
+        keywords="interior design contact, luxury design consultation, residential design, commercial design, design consultation"
+        ogTitle="Contact Eleven Interior World"
+        ogDescription="Get in touch with us for premium interior design services"
+        ogImage="/img/og-contact.jpg"
+        ogUrl="/contact"
+        canonical="/contact"
+        structuredData={contactStructuredData}
+      />
+      <div className="min-h-screen w-screen overflow-x-hidden bg-violet-100 contact-page">
+        {/* Navigation */}
+        <NavBar />
 
-      {/* Main Section */}
-      <div className="min-h-screen flex flex-col items-center text-center px-4 sm:px-6 pt-20 pb-20">
-        {/* Section Header */}
-        <div className="relative mb-12 mt-20 sm:mt-36 flex flex-col items-center gap-6 max-w-4xl mx-auto">
-          <p className="font-general text-xs uppercase text-gray-500 tracking-wider">
-            Get In Touch With Us
+        {/* Main Section */}
+        <div className="min-h-screen flex flex-col items-center text-center px-4 sm:px-6 pt-20 pb-20">
+          {/* Section Header */}
+          <div className="relative mb-12 mt-20 sm:mt-36 flex flex-col items-center gap-6 max-w-4xl mx-auto">
+            <p className="font-general text-xs uppercase text-gray-500 tracking-wider">
+              Get In Touch With Us
+            </p>
+
+          {/* Animated "CONTACT US" Text */}
+            <div ref={animatedTitleRef} className="text-center">
+            <AnimatedTitle
+              title="C<b>O</b>NTACT US"
+              containerClass="font-extrabold hero-heading-big px-5 !text-black"
+            />
+          </div>
+
+            <h2 className="font-bold text-2xl sm:text-4xl md:text-5xl lg:text-6xl text-black leading-tight">
+            Feel Free To Reach Us!
+          </h2>
+            <p className="text-gray-700 mt-4 text-base sm:text-lg max-w-2xl leading-relaxed">
+              Have a project in mind or need expert advice? Fill out the form below, and our team will get back to you promptly! Let's create something amazing together.
           </p>
+          </div>
 
-        {/* Animated "CONTACT US" Text */}
-          <div ref={animatedTitleRef} className="text-center">
-          <AnimatedTitle
-            title="C<b>O</b>NTACT US"
-            containerClass="font-extrabold hero-heading-big px-5 !text-black"
+          {/* Contact Form and Info */}
+          <div className="flex flex-col items-center justify-center w-full max-w-4xl mx-auto space-y-8">
+          <ContactForm
+            formRef={formRef}
+            handleSubmit={handleSubmit}
+            name={name}
+            setName={setName}
+            email={email}
+            setEmail={setEmail}
+            number={number}
+            setNumber={setNumber}
+            message={message}
+            setMessage={setMessage}
+            isSubmitting={isSubmitting}
+            submitStatus={submitStatus}
           />
+          <CompanyInfo companyInfoRef={companyInfoRef} />
+          <MapSection mapRef={mapRef} />
         </div>
-
-          <h2 className="font-bold text-2xl sm:text-4xl md:text-5xl lg:text-6xl text-black leading-tight">
-          Feel Free To Reach Us!
-        </h2>
-          <p className="text-gray-700 mt-4 text-base sm:text-lg max-w-2xl leading-relaxed">
-            Have a project in mind or need expert advice? Fill out the form below, and our team will get back to you promptly! Let's create something amazing together.
-        </p>
         </div>
-
-        {/* Contact Form and Info */}
-        <div className="flex flex-col items-center justify-center w-full max-w-4xl mx-auto space-y-8">
-        <ContactForm
-          formRef={formRef}
-          handleSubmit={handleSubmit}
-          name={name}
-          setName={setName}
-          email={email}
-          setEmail={setEmail}
-          number={number}
-          setNumber={setNumber}
-          message={message}
-          setMessage={setMessage}
-          isSubmitting={isSubmitting}
-          submitStatus={submitStatus}
-        />
-        <CompanyInfo companyInfoRef={companyInfoRef} />
-        <MapSection mapRef={mapRef} />
+        
+        <Footer />
       </div>
-      </div>
-      
-      <Footer />
-    </div>
+    </>
   );
 }
 

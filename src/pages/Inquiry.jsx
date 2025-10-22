@@ -7,6 +7,7 @@ import { useGSAP } from "@gsap/react";
 import Footer from "../components/Footer";
 import NavBar from "../components/Navbar";
 import { inquiryService } from "../services/inquiryService";
+import SEO from "../components/SEO"; // Import SEO component
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -313,6 +314,32 @@ function Inquiry() {
     }
   };
 
+  // Structured data for inquiry page
+  const inquiryStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Project Inquiry - Eleven Interior World",
+    "description": "Submit your project inquiry to Eleven Interior World for premium interior design services for residential and commercial spaces",
+    "url": typeof window !== 'undefined' ? window.location.href : '',
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": typeof window !== 'undefined' ? window.location.origin : ''
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Inquiry",
+          "item": typeof window !== 'undefined' ? window.location.href : ''
+        }
+      ]
+    }
+  };
+
   if (isSubmitted) {
     return (
       <div className="min-h-screen w-screen overflow-x-hidden bg-violet-100">
@@ -340,48 +367,61 @@ function Inquiry() {
   }
 
   return (
-    <div className="min-h-screen w-screen overflow-x-hidden bg-violet-100 pt-20">
-      {/* Navigation */}
-      <NavBar />
-      
-      {/* Main Section */}
-      <div className="min-h-screen flex flex-col items-center text-center px-4 sm:px-6 pt-16 pb-8">
-        {/* Section Header */}
-        <div className="relative mb-8 mt-8 flex flex-col items-center gap-4 max-w-4xl mx-auto">
-          <p className="font-general text-xs uppercase text-gray-500 tracking-wider">
-            Start Your Project
-          </p>
+    <>
+      <SEO
+        title="Project Inquiry - Eleven Interior World"
+        description="Submit your project inquiry to Eleven Interior World for premium interior design services for residential and commercial spaces"
+        keywords="interior design inquiry, luxury design project, residential design inquiry, commercial design inquiry, project consultation"
+        ogTitle="Project Inquiry - Eleven Interior World"
+        ogDescription="Submit your project inquiry for premium interior design services"
+        ogImage="/img/og-inquiry.jpg"
+        ogUrl="/inquiry"
+        canonical="/inquiry"
+        structuredData={inquiryStructuredData}
+      />
+      <div className="min-h-screen w-screen overflow-x-hidden bg-violet-100 pt-20">
+        {/* Navigation */}
+        <NavBar />
+        
+        {/* Main Section */}
+        <div className="min-h-screen flex flex-col items-center text-center px-4 sm:px-6 pt-16 pb-8">
+          {/* Section Header */}
+          <div className="relative mb-8 mt-8 flex flex-col items-center gap-4 max-w-4xl mx-auto">
+            <p className="font-general text-xs uppercase text-gray-500 tracking-wider">
+              Start Your Project
+            </p>
 
-          {/* Animated Title */}
-          <div ref={animatedTitleRef} className="text-center">
-            <AnimatedTitle
-              title="PROJECT <b>INQUIRY</b>"
-              containerClass="font-extrabold text-4xl sm:text-5xl md:text-6xl px-5 !text-black"
-            />
+            {/* Animated Title */}
+            <div ref={animatedTitleRef} className="text-center">
+              <AnimatedTitle
+                title="PROJECT <b>INQUIRY</b>"
+                containerClass="font-extrabold text-4xl sm:text-5xl md:text-6xl px-5 !text-black"
+              />
+            </div>
+
+            <h2 className="font-bold text-xl sm:text-2xl md:text-3xl text-black leading-tight">
+              Let's Create Something Amazing Together!
+            </h2>
+            <p className="text-gray-700 mt-2 text-sm sm:text-base max-w-2xl leading-relaxed">
+              Tell us about your vision and we'll help bring it to life.
+            </p>
           </div>
 
-          <h2 className="font-bold text-xl sm:text-2xl md:text-3xl text-black leading-tight">
-            Let's Create Something Amazing Together!
-          </h2>
-          <p className="text-gray-700 mt-2 text-sm sm:text-base max-w-2xl leading-relaxed">
-            Tell us about your vision and we'll help bring it to life.
-          </p>
+          {/* Inquiry Form */}
+          <div className="flex flex-col items-center justify-center w-full max-w-2xl mx-auto">
+            <InquiryForm
+              formRef={formRef}
+              handleSubmit={handleSubmit}
+              formData={formData}
+              setFormData={setFormData}
+              isSubmitting={isSubmitting}
+            />
+          </div>
         </div>
-
-        {/* Inquiry Form */}
-        <div className="flex flex-col items-center justify-center w-full max-w-2xl mx-auto">
-          <InquiryForm
-            formRef={formRef}
-            handleSubmit={handleSubmit}
-            formData={formData}
-            setFormData={setFormData}
-            isSubmitting={isSubmitting}
-          />
-        </div>
+        
+        <Footer />
       </div>
-      
-      <Footer />
-    </div>
+    </>
   );
 }
 

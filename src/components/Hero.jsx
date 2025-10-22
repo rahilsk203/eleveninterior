@@ -3,6 +3,7 @@ import { useGSAP } from "@gsap/react"; // React hook for GSAP
 import { ScrollTrigger } from "gsap/all"; // GSAP ScrollTrigger plugin
 import { TiLocationArrow } from "react-icons/ti"; // Arrow icon for the button
 import { useEffect, useRef, useState, useCallback, useMemo } from "react"; // React hooks
+import { scroller } from "react-scroll"; // Add this import for smooth scrolling
 
 import Button from "./Button"; // Custom Button component
 import VideoPreview from "./VideoPreview"; // Custom VideoPreview component
@@ -355,6 +356,16 @@ const Hero = () => {
     }
   }, [videoSources]);
 
+  // Function to handle button click with smooth scroll to about section
+  const handleButtonClick = useCallback(() => {
+    scroller.scrollTo('about', {
+      duration: 800,
+      delay: 0,
+      smooth: 'easeInOutQuart',
+      offset: -80 // Adjust for navbar height
+    });
+  }, []);
+
   return (
     <div ref={elementRef} className="relative h-dvh w-screen overflow-x-hidden">
       {/* Loading spinner */}
@@ -464,6 +475,7 @@ const Hero = () => {
               title="Enter Eleven"
               leftIcon={<TiLocationArrow />}
               containerClass="bg-yellow-300 flex-center gap-1"
+              method={handleButtonClick} // Add the click handler
             />
           </div>
         </div>
