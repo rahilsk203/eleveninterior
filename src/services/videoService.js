@@ -34,12 +34,9 @@ class VideoService {
     // Fallback to local videos if API fails
     this.useLocalVideos = false;
     
-    // Endpoint priority order for faster lookup
+    // Endpoint priority order for faster lookup - only use the correct endpoint
     this.endpointPriority = [
-      `${this.API_BASE}/api/videos/{section}`,
-      `${this.API_BASE}/api/{section}/videos`,
-      `${this.API_BASE}/{section}/videos`,
-      `${this.API_BASE}/videos/{section}`
+      `${this.API_BASE}/api/videos/{section}`
     ];
   }
 
