@@ -12,6 +12,9 @@ const Gallery = lazy(() => import("./pages/Gallery"));
 const Features = lazy(() => import("./pages/Features"));
 const About = lazy(() => import("./pages/About"));
 const Testimonials = lazy(() => import("./pages/Testimonials"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 
 // Wrapper component to track location changes
 const LocationTracker = ({ children }) => {
@@ -39,6 +42,9 @@ function App() {
             <Route path="/inquiry" element={<Inquiry />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/features" element={<Features />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
           </Routes>
         </Suspense>
       </LocationTracker>

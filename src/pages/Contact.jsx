@@ -59,7 +59,7 @@ const ContactForm = ({ formRef, handleSubmit, name, setName, email, setEmail, nu
       <input
         type="tel"
         id="number"
-        placeholder="+123 456 7890"
+        placeholder="+91 76679 74947"
         value={number}
         onChange={(e) => setNumber(e.target.value)}
         className="w-full px-4 py-3 rounded-lg border border-white/30 bg-white/10 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all placeholder-gray-400 text-white hover:bg-white/15"
@@ -136,7 +136,7 @@ const CompanyInfo = ({ companyInfoRef }) => (
       {/* Address, Phone, Email, Work Hours */}
       <div className="flex items-start group">
         <a
-          href="https://www.google.com/maps?q=123+Main+Street,City,Country"
+          href="https://www.google.com/maps?q=96/C+Chittaranjan+Avenue,+Kolkata,+700012"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform"
@@ -145,27 +145,27 @@ const CompanyInfo = ({ companyInfoRef }) => (
         </a>
         <div>
           <span className="text-gray-300 font-medium">Address:</span>
-          <span className="text-white block">123 Main Street, City, Country</span>
+          <span className="text-white block">96/C Chittaranjan Avenue, Kolkata 700012</span>
         </div>
       </div>
 
       <div className="flex items-start group">
-        <a href="tel:+1234567890" className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform">
+        <a href="tel:+917667974947" className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform">
           <FiPhone className="text-violet-400 w-6 h-6 mr-4 flex-shrink-0 cursor-pointer" />
         </a>
         <div>
           <span className="text-gray-300 font-medium">Phone:</span>
-          <span className="text-white block">+123 456 7890</span>
+          <span className="text-white block">+91 76679 74947</span>
         </div>
       </div>
 
       <div className="flex items-start group">
-        <a href="mailto:info@eleveninteriorworld.com" className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform">
+        <a href="mailto:eleveninteriorworld@gmail.com" className="hover:opacity-80 transition-opacity group-hover:scale-110 transition-transform">
           <FiMail className="text-violet-400 w-6 h-6 mr-4 flex-shrink-0 cursor-pointer" />
         </a>
         <div>
           <span className="text-gray-300 font-medium">Email:</span>
-          <span className="text-white block">info@eleveninteriorworld.com</span>
+          <span className="text-white block">eleveninteriorworld@gmail.com</span>
         </div>
       </div>
 
@@ -190,7 +190,7 @@ const MapSection = ({ mapRef }) => (
       <h3 className="text-xl font-bold text-white text-center">Find Us Here</h3>
     </div>
     <iframe
-      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.835434509374!2d144.9537353153166!3d-37.816279742021665!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad642af0f11fd81%3A0xf577d2a2c0b4a1a4!2s123%20Main%20St%2C%20City%20VIC%203000%2C%20Australia!5e0!3m2!1sen!2sus!4v1633039290000!5m2!1sen!2sus"
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3684.0571009334437!2d88.374004375304!3d22.57504397951106!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a0276d0a28811d7%3A0x8f1d1d0e0b0e0e0e!2s96%2FC%20Chittaranjan%20Ave%2C%20Kolkata%2C%20West%20Bengal%20700012!5e0!3m2!1sen!2sin!4v1650000000000!5m2!1sen!2sin"
       width="100%"
       height="400"
       style={{ border: 0 }}
@@ -341,16 +341,16 @@ function Contact() {
       "url": typeof window !== 'undefined' ? window.location.origin : '',
       "contactPoint": {
         "@type": "ContactPoint",
-        "telephone": "+123 456 7890",
+        "telephone": "+91 76679 74947",
         "contactType": "customer service",
-        "email": "info@eleveninteriorworld.com",
+        "email": "eleveninteriorworld@gmail.com",
         "availableLanguage": "en"
       },
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "123 Main Street",
-        "addressLocality": "City",
-        "addressCountry": "Country"
+        "streetAddress": "96/C Chittaranjan Avenue",
+        "addressLocality": "Kolkata",
+        "postalCode": "700012"
       }
     }
   };
